@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SecretStatus, UserSecretDefinition } from "@paperclipai/shared";
 import { AlertCircle, Pencil, Plus, Trash2, UserRound, Users } from "lucide-react";
@@ -64,6 +65,7 @@ const emptyForm: DefinitionForm = {
  * only — never values — per the UX terminology decisions.
  */
 export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -156,15 +158,13 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
       <div className="flex items-start gap-2 rounded-md border border-violet-500/30 bg-violet-500/5 px-4 py-3 text-xs text-violet-800 dark:text-violet-200">
         <UserRound className="h-4 w-4 mt-0.5 shrink-0" />
         <p>
-          Define credentials that <span className="font-medium">each member supplies for
-          themselves</span>. You set the shape here; every user enters their own value under My
-          secrets. Coverage shows how many members have set a value — never the values themselves.
+          {t("secrets.userDefinitions.bannerText", "Define credentials that each member supplies for themselves. You set the shape here; every user enters their own value under My secrets. Coverage shows how many members have set a value — never the values themselves.")}
         </p>
       </div>
 
       <div className="flex items-center justify-end">
         <Button size="sm" onClick={openCreate}>
-          <Plus className="mr-1 h-3.5 w-3.5" /> New user secret
+          <Plus className="mr-1 h-3.5 w-3.5" /> {t("secrets.userDefinitions.newUserSecret", "New user secret")}
         </Button>
       </div>
 
@@ -180,8 +180,8 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
         ) : definitions.length === 0 && !definitionsQuery.isPending ? (
           <EmptyState
             icon={UserRound}
-            message="No user secret definitions yet. Create one to require each member to supply their own credential."
-            action="New user secret"
+            message={t("secrets.userDefinitions.description", "Define secret keys that each team member must configure individually.")}
+            action={t("secrets.userDefinitions.newUserSecret", "New user secret")}
             onAction={openCreate}
           />
         ) : (
@@ -234,11 +234,11 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {editing ? "Edit user secret" : "New user secret"}
+              {editing ? t("secrets.userDefinitions.editUserSecret", "Edit user secret") : t("secrets.userDefinitions.newUserSecret", "New user secret")}
               <UserSecretChip />
             </DialogTitle>
             <DialogDescription>
-              Members supply their own value for this credential. No value is entered here.
+              {t("secrets.userDefinitions.dialogDesc", "Members supply their own value for this credential. No value is entered here.")}
             </DialogDescription>
           </DialogHeader>
 
@@ -323,10 +323,10 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
 
           <DialogFooter>
             <Button variant="ghost" onClick={() => setDialogOpen(false)} disabled={save.isPending}>
-              Cancel
+              {t("secrets.dialogs.cancel", "Cancel")}
             </Button>
             <Button onClick={() => save.mutate()} disabled={!canSave || save.isPending}>
-              {save.isPending ? "Saving…" : editing ? "Save changes" : "Create"}
+              {save.isPending ? t("pipelines.stageSecrets.saving", "Saving…") : editing ? t("secrets.dialogs.save", "Save changes") : t("secrets.dialogs.create", "Create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -336,22 +336,21 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
       <Dialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove user secret?</DialogTitle>
+            <DialogTitle>{t("secrets.userDefinitions.removeTitle", "Remove user secret?")}</DialogTitle>
             <DialogDescription>
-              This removes the definition <span className="font-mono">{deleteTarget?.key}</span> for
-              the whole company. Existing member values become unreferenced. This cannot be undone.
+              {t("secrets.userDefinitions.removeDesc", "This removes the definition {{key}} for the whole company. Existing member values become unreferenced. This cannot be undone.", { key: deleteTarget?.key })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setDeleteTarget(null)} disabled={remove.isPending}>
-              Cancel
+              {t("secrets.dialogs.cancel", "Cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={() => deleteTarget && remove.mutate(deleteTarget)}
               disabled={remove.isPending}
             >
-              {remove.isPending ? "Removing…" : "Remove"}
+              {remove.isPending ? t("skills.sources.removing", "Removing…") : t("secrets.table.delete", "Remove")}
             </Button>
           </DialogFooter>
         </DialogContent>

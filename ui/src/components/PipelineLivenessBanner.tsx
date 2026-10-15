@@ -1,4 +1,5 @@
 import { AlertTriangle, ExternalLink, Loader2, Lock, RefreshCw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { PipelineCaseLiveness } from "@paperclipai/shared";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/lib/router";
@@ -63,14 +64,14 @@ const TONE_PALETTES: Record<LivenessBannerTone, TonePalette> = {
   },
 };
 
-function blockerLinkLabel(link: LivenessBannerLink): string {
-  if (link.identifier) return `Open ${link.identifier}`;
-  return "Open blocker";
+function blockerLinkLabel(link: LivenessBannerLink, t: (k: string, d: string) => string): string {
+  if (link.identifier) return `${t("common.open", "Open")} ${link.identifier}`;
+  return t("pipelines.liveness.openBlocker", "Open blocker");
 }
 
-function automationLinkLabel(link: LivenessBannerLink): string {
-  if (link.identifier) return `Open ${link.identifier}`;
-  return "Open automation task";
+function automationLinkLabel(link: LivenessBannerLink, t: (k: string, d: string) => string): string {
+  if (link.identifier) return `${t("common.open", "Open")} ${link.identifier}`;
+  return t("pipelines.liveness.openAutomationTask", "Open automation task");
 }
 
 export function PipelineLivenessBanner({
@@ -84,6 +85,7 @@ export function PipelineLivenessBanner({
   retryPending?: boolean;
   retryError?: string | null;
 }) {
+  const { t } = useTranslation();
   const view = derivePipelineLivenessBanner(liveness);
   if (!view) return null;
 
@@ -130,7 +132,7 @@ export function PipelineLivenessBanner({
                   className={cn("inline-flex items-center gap-1 font-medium underline-offset-2 hover:underline", palette.link)}
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  {blockerLinkLabel(view.blockerLink)}
+                  {blockerLinkLabel(view.blockerLink, t)}
                   {view.blockerLink.title ? `: ${view.blockerLink.title}` : ""}
                 </Link>
               ) : null}
@@ -140,7 +142,7 @@ export function PipelineLivenessBanner({
                   className={cn("inline-flex items-center gap-1 font-medium underline-offset-2 hover:underline", palette.link)}
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  {automationLinkLabel(view.automationLink)}
+                  {automationLinkLabel(view.automationLink, t)}
                 </Link>
               ) : null}
             </p>
@@ -169,7 +171,7 @@ export function PipelineLivenessBanner({
           ) : (
             <RefreshCw className="mr-2 h-4 w-4" />
           )}
-          {retryPending ? "Retrying…" : view.retryLabel}
+          {retryPending ? t("pipelines.liveness.retrying", "Retrying…") : view.retryLabel}
         </Button>
       ) : null}
     </section>

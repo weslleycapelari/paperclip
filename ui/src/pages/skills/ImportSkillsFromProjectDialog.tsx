@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -234,6 +235,7 @@ function CandidateStatusBadge({
 }: {
   status: CompanySkillProjectScanCandidate["status"];
 }) {
+  const { t } = useTranslation();
   switch (status) {
     case "already_imported":
       return (
@@ -241,7 +243,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-muted-foreground border-border/60"
         >
-          <Link2 className="h-3 w-3" /> Imported
+          <Link2 className="h-3 w-3" /> {t("skills.projectImport.statusAlreadyImported", "Imported")}
         </Badge>
       );
     case "conflict":
@@ -250,7 +252,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-amber-600 border-amber-500/40 dark:text-amber-400"
         >
-          <AlertTriangle className="h-3 w-3" /> Conflict
+          <AlertTriangle className="h-3 w-3" /> {t("skills.projectImport.statusConflict", "Conflict")}
         </Badge>
       );
     case "skipped":
@@ -259,7 +261,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-muted-foreground border-border/60"
         >
-          <FileWarning className="h-3 w-3" /> Skipped
+          <FileWarning className="h-3 w-3" /> {t("skills.projectImport.statusSkipped", "Skipped")}
         </Badge>
       );
     case "new":
@@ -269,7 +271,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-emerald-600 border-emerald-500/40 dark:text-emerald-400"
         >
-          <CheckCircle2 className="h-3 w-3" /> New
+          <CheckCircle2 className="h-3 w-3" /> {t("skills.projectImport.statusNew", "New")}
         </Badge>
       );
   }
@@ -281,6 +283,7 @@ export function ImportSkillsFromProjectDialog({
   companyId,
   onImportFromPath,
 }: ImportSkillsFromProjectDialogProps) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const toast = useToastActions();
 
@@ -513,10 +516,10 @@ export function ImportSkillsFromProjectDialog({
         <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border/60 px-5 py-4">
           <div className="flex flex-col gap-1">
             <DialogTitle className="text-base font-semibold">
-              Import skills from project
+              {t("skills.projectImport.title", "Import skills from project")}
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Pick a project, scan its workspaces for skills, and import them as references.
+              {t("skills.projectImport.description", "Pick a project, scan its workspaces for skills, and import them as references.")}
             </DialogDescription>
           </div>
           <button
@@ -588,7 +591,7 @@ export function ImportSkillsFromProjectDialog({
                       disabled={selectableCandidates.length === 0}
                       data-testid="select-all"
                     >
-                      Select all
+                      {t("skills.projectImport.selectAll", "Select all")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -597,12 +600,12 @@ export function ImportSkillsFromProjectDialog({
                       disabled={selectedCount === 0}
                       data-testid="deselect-all"
                     >
-                      Deselect all
+                      {t("skills.projectImport.deselectAll", "Deselect all")}
                     </Button>
                   </div>
                 )}
                 <Button variant="outline" size="sm" onClick={backToPick}>
-                  <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Back
+                  <ArrowLeft className="mr-1 h-3.5 w-3.5" /> {t("skills.sources.back", "Back")}
                 </Button>
                 {!scanError && candidates.length > 0 && (
                   <Button
@@ -616,7 +619,10 @@ export function ImportSkillsFromProjectDialog({
                         <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Importing…
                       </>
                     ) : (
-                      `Import ${selectedCount} skill${selectedCount === 1 ? "" : "s"}`
+                      t("skills.projectImport.importSelected", "Import {{count}} skill{{plural}}", {
+                        count: selectedCount,
+                        plural: selectedCount === 1 ? "" : "s",
+                      })
                     )}
                   </Button>
                 )}
@@ -624,12 +630,12 @@ export function ImportSkillsFromProjectDialog({
             )}
             {step === "pick" && (
               <Button variant="ghost" size="sm" onClick={handleClose}>
-                Cancel
+                {t("skills.sources.cancel", "Cancel")}
               </Button>
             )}
             {step === "result" && (
               <Button size="sm" onClick={handleClose}>
-                Done
+                {t("skills.projectImport.done", "Done")}
               </Button>
             )}
           </div>

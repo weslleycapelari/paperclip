@@ -1,6 +1,7 @@
 import { interactionReadinessRefetchInterval } from "@/lib/issue-thread-interactions";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { groupWarningsByStage, LOW_TRUST_REVIEW_PRESET } from "@paperclipai/shared";
 import type {
@@ -618,6 +619,7 @@ export function PipelinesIndexTable({
   search,
   onSearchChange,
 }: PipelinesIndexTableProps) {
+  const { t } = useTranslation();
   const [collapsedPipelineIds, setCollapsedPipelineIds] = useState<Set<string>>(() => new Set());
   const [sortField, setSortField] = useState<PipelineSortField>("name");
   const [sortDir, setSortDir] = useState<PipelineSortDir>("asc");
@@ -667,7 +669,7 @@ export function PipelinesIndexTable({
           <Input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search pipelines"
+            placeholder={t("pipelines.search", "Search pipelines")}
             className="h-10 pl-9"
           />
         </label>
@@ -683,7 +685,7 @@ export function PipelinesIndexTable({
               )}
               disabled={!connectionsAvailable}
               onClick={() => onViewModeChange("nested")}
-              title="Nested view"
+              title={t("pipelines.table.nestedView", "Nested view")}
             >
               <ListTree className="h-3.5 w-3.5" />
             </button>
@@ -696,7 +698,7 @@ export function PipelinesIndexTable({
                   : "text-muted-foreground hover:text-foreground",
               )}
               onClick={() => onViewModeChange("flat")}
-              title="Flat list"
+              title={t("pipelines.table.flatList", "Flat list")}
             >
               <List className="h-3.5 w-3.5" />
             </button>
@@ -704,7 +706,7 @@ export function PipelinesIndexTable({
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title="Sort">
+              <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title={t("pipelines.table.sort", "Sort")}>
                 <ArrowUpDown className="h-3.5 w-3.5" />
               </Button>
             </PopoverTrigger>
@@ -733,17 +735,17 @@ export function PipelinesIndexTable({
       </div>
 
       {rows.length === 0 ? (
-        <EmptyState icon={Hexagon} message="No pipelines match your search." />
+        <EmptyState icon={Hexagon} message={t("pipelines.table.noMatch", "No pipelines match your search.")} />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-(--sz-780px) border-collapse text-sm">
             <thead>
               <tr className="border-b border-border text-left text-(length:--text-micro) font-semibold uppercase tracking-widest text-muted-foreground">
-                <th className="py-2 pl-3 pr-4">Name</th>
-                <th className="px-4 py-2">Attention</th>
-                <th className="px-4 py-2">Open items</th>
-                <th className="px-4 py-2">Status</th>
-                <th className="px-4 py-2">Last activity</th>
+                <th className="py-2 pl-3 pr-4">{t("pipelines.table.name", "Name")}</th>
+                <th className="px-4 py-2">{t("pipelines.table.attention", "Attention")}</th>
+                <th className="px-4 py-2">{t("pipelines.table.openItems", "Open items")}</th>
+                <th className="px-4 py-2">{t("pipelines.table.status", "Status")}</th>
+                <th className="px-4 py-2">{t("pipelines.table.lastActivity", "Last activity")}</th>
               </tr>
             </thead>
             <tbody>
@@ -775,7 +777,7 @@ export function PipelinesIndexTable({
                             {row.pipeline.name}
                           </Link>
                           {row.parentPipelineName ? (
-                            <span className="ml-2 text-muted-foreground">under {row.parentPipelineName}</span>
+                            <span className="ml-2 text-muted-foreground">{t("pipelines.table.underParent", "under {{name}}", { name: row.parentPipelineName })}</span>
                           ) : row.pipeline.description ? (
                             <span className="ml-2 text-muted-foreground">- {row.pipeline.description}</span>
                           ) : null}
@@ -787,12 +789,12 @@ export function PipelinesIndexTable({
                         {attentionCount > 0 ? (
                           <span className="inline-flex items-center gap-1.5 font-semibold text-red-700 dark:text-red-400">
                             <span className="h-2 w-2 rounded-full bg-red-600" aria-hidden="true" />
-                            {formatNumber(attentionCount)} to review
+                            {t("pipelines.table.toReview", "{{count}} to review", { count: attentionCount })}
                           </span>
                         ) : null}
                         {inMotionCount > 0 ? (
                           <span className="text-muted-foreground">
-                            {formatNumber(inMotionCount)} in motion
+                            {t("pipelines.table.inMotion", "{{count}} in motion", { count: inMotionCount })}
                           </span>
                         ) : null}
                         {liveDownstreamCount > 0 ? (
@@ -812,7 +814,7 @@ export function PipelinesIndexTable({
             </tbody>
           </table>
           <p className="mt-4 text-sm text-muted-foreground">
-            Showing {formatNumber(rows.length)} of {formatNumber(filteredPipelines.length)}.
+            {t("pipelines.table.showingCount", "Showing {{rows}} of {{total}}.", { rows: formatNumber(rows.length), total: formatNumber(filteredPipelines.length) })}
           </p>
         </div>
       )}
@@ -833,6 +835,7 @@ function NewPipelineDialog({
   pending: boolean;
   error: string | null;
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
@@ -855,16 +858,16 @@ function NewPipelineDialog({
       <DialogContent>
         <form onSubmit={submit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>New pipeline</DialogTitle>
-            <DialogDescription>Name the pipeline and add a short description.</DialogDescription>
+            <DialogTitle>{t("pipelines.dialogs.newPipelineTitle", "New pipeline")}</DialogTitle>
+            <DialogDescription>{t("pipelines.dialogs.newPipelineDesc", "Name the pipeline and add a short description.")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <label className="block space-y-1.5 text-sm font-medium">
-              <span>Name</span>
+              <span>{t("pipelines.dialogs.name", "Name")}</span>
               <Input value={name} onChange={(event) => setName(event.target.value)} autoFocus />
             </label>
             <label className="block space-y-1.5 text-sm font-medium">
-              <span>Description</span>
+              <span>{t("pipelines.dialogs.description", "Description")}</span>
               <Textarea
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
@@ -875,10 +878,10 @@ function NewPipelineDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
-              Cancel
+              {t("pipelines.dialogs.cancel", "Cancel")}
             </Button>
             <Button type="submit" disabled={pending || !name.trim()}>
-              {pending ? "Creating..." : "Create pipeline"}
+              {pending ? t("pipelines.dialogs.creating", "Creating...") : t("pipelines.dialogs.createPipeline", "Create pipeline")}
             </Button>
           </DialogFooter>
         </form>
@@ -898,6 +901,7 @@ export function pipelineKeyFromName(name: string) {
 }
 
 function PipelinesIndex() {
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
@@ -906,7 +910,7 @@ function PipelinesIndex() {
   const [viewMode, setViewMode] = useState<PipelineViewMode>("nested");
   const [newPipelineOpen, setNewPipelineOpen] = useState(false);
 
-  useEffect(() => setBreadcrumbs([{ label: "Pipelines" }]), [setBreadcrumbs]);
+  useEffect(() => setBreadcrumbs([{ label: t("pipelines.title", "Pipelines") }]), [setBreadcrumbs, t]);
 
   const pipelinesQuery = useQuery({
     queryKey: selectedCompanyId ? queryKeys.pipelines.list(selectedCompanyId) : ["pipelines", "missing-company"],
@@ -942,7 +946,7 @@ function PipelinesIndex() {
   });
 
   if (!selectedCompanyId) {
-    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">Select an organization to view pipelines.</div>;
+    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">{t("pipelines.selectOrg", "Select an organization to view pipelines.")}</div>;
   }
   if (pipelinesQuery.isLoading) return <PageSkeleton />;
 
@@ -953,27 +957,27 @@ function PipelinesIndex() {
     <div className="w-full max-w-6xl px-6 py-8">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Work</p>
-          <h1 className="text-2xl font-semibold text-foreground">Pipelines</h1>
+          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{t("pipelines.work", "Work")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{t("pipelines.title", "Pipelines")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {formatNumber(pipelines.length)} pipeline{pipelines.length === 1 ? "" : "s"}. Connected ones are grouped from upstream work into downstream work.
+            {t("pipelines.connectedPipelinesDescription", "{{count}} pipeline{{plural}}. Connected ones are grouped from upstream work into downstream work.", { count: pipelines.length, plural: pipelines.length === 1 ? "" : "s" })}
           </p>
         </div>
         <Button onClick={() => setNewPipelineOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          New pipeline
+          {t("pipelines.newPipeline", "New pipeline")}
         </Button>
       </div>
 
       {pipelinesQuery.error ? (
-        <p className="mb-4 text-sm text-destructive">Could not load pipelines.</p>
+        <p className="mb-4 text-sm text-destructive">{t("pipelines.couldNotLoad", "Could not load pipelines.")}</p>
       ) : null}
 
       {pipelines.length === 0 && !pipelinesQuery.error ? (
         <EmptyState
           icon={Hexagon}
-          message="No pipelines yet."
-          action="New pipeline"
+          message={t("pipelines.empty", "No pipelines yet.")}
+          action={t("pipelines.newPipeline", "New pipeline")}
           onAction={() => setNewPipelineOpen(true)}
         />
       ) : (
@@ -995,7 +999,7 @@ function PipelinesIndex() {
         }}
         onSubmit={(data) => createPipeline.mutate(data)}
         pending={createPipeline.isPending}
-        error={createPipeline.error ? "Could not create the pipeline. Try a different name." : null}
+        error={createPipeline.error ? t("pipelines.dialogs.createError", "Could not create the pipeline. Try a different name.") : null}
       />
     </div>
   );
@@ -1184,7 +1188,7 @@ export function writeStoredPipelineBoardGroupBy(
   }
 }
 
-export function groupCasesByBuiltFor(cases: BoardCase[]) {
+export function groupCasesByBuiltFor(cases: BoardCase[], emptyLabel: string = "No built-for item") {
   const groups = new Map<string, {
     key: string;
     label: string;
@@ -1197,7 +1201,7 @@ export function groupCasesByBuiltFor(cases: BoardCase[]) {
     const key = parent?.case.id ?? PIPELINE_BOARD_UNGROUPED_KEY;
     const group = groups.get(key) ?? {
       key,
-      label: parent ? `${parent.pipeline.name}: ${parent.case.title}` : "No built-for item",
+      label: parent ? `${parent.pipeline.name}: ${parent.case.title}` : emptyLabel,
       href: parent ? `/pipelines/${parent.case.pipelineId}/items/${parent.case.id}` : null,
       cases: [],
     };
@@ -1313,12 +1317,13 @@ function PipelineBoardColumn({
   isDragTargeted?: boolean;
   isDragBlocked?: boolean;
 }) {
+  const { t } = useTranslation();
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
 
   const tone = getPipelineStageColumnTone(stage.kind);
   const isBlockedDropTarget = !!isDragTargeted && !!isDragBlocked;
   const caseGroups = groupBy === "builtFor"
-    ? groupCasesByBuiltFor(cases)
+    ? groupCasesByBuiltFor(cases, t("pipelines.noBuiltForItem", "No built-for item"))
     : [{ key: "all", label: "", href: null, cases }];
   const sortableCaseIds = caseGroups.flatMap((group) => group.cases.map((entry) => entry.id));
 
@@ -1423,6 +1428,7 @@ function PipelineBoardColumn({
 }
 
 function PipelineBoard({ pipelineId }: { pipelineId: string }) {
+  const { t } = useTranslation();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
   const { selectedCompanyId } = useCompany();
@@ -1692,10 +1698,10 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Pipelines", href: "/pipelines" },
-      { label: pipeline?.name ?? "Pipeline" },
+      { label: t("pipelines.title", "Pipelines"), href: "/pipelines" },
+      { label: pipeline?.name ?? t("pipelines.board.pipeline", "Pipeline") },
     ]);
-  }, [pipeline?.name, setBreadcrumbs]);
+  }, [pipeline?.name, setBreadcrumbs, t]);
 
   useEffect(() => {
     setGroupByState({ pipelineId, value: readStoredPipelineBoardGroupBy(pipelineId) });
@@ -1710,7 +1716,7 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
     return (
       <div className="mx-auto max-w-6xl space-y-4 px-6 py-8">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Pipeline</p>
+          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{t("pipelines.board.pipeline", "Pipeline")}</p>
           <h1 className="text-2xl font-semibold text-foreground">{pipeline.name}</h1>
           <p className="text-sm text-muted-foreground">No stages are set up for this pipeline yet.</p>
         </div>
@@ -1730,7 +1736,7 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
     <div className="w-full space-y-4 px-6 py-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Pipeline</p>
+          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{t("pipelines.board.pipeline", "Pipeline")}</p>
           <h1 className="text-2xl font-semibold text-foreground">{pipeline.name}</h1>
           {pipeline.description ? <p className="mt-1 text-sm text-muted-foreground">{pipeline.description}</p> : null}
           <p className="mt-1 text-xs text-muted-foreground">{cases.length} total item{cases.length === 1 ? "" : "s"}</p>
@@ -1744,7 +1750,7 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
                   title={`Fed by ${source.name}`}
                 >
                   <span className="shrink-0">←</span>
-                  <span className="truncate">Fed by {source.name}</span>
+                  <span className="truncate">{t("pipelines.board.fedBy", "Fed by {{name}}", { name: source.name })}</span>
                 </Link>
               ))}
             </div>
@@ -1752,23 +1758,23 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
           <Select value={groupBy} onValueChange={handleGroupByChange}>
-            <SelectTrigger className="h-9 w-(--sz-148px)" aria-label="Group by" title="Group by">
+            <SelectTrigger className="h-9 w-(--sz-148px)" aria-label={t("pipelines.board.groupBy", "Group by")} title={t("pipelines.board.groupBy", "Group by")}>
               <Layers className="h-4 w-4 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">None</SelectItem>
-              <SelectItem value="builtFor">Built for</SelectItem>
+              <SelectItem value="none">{t("pipelines.board.groupByNone", "None")}</SelectItem>
+              <SelectItem value="builtFor">{t("pipelines.board.groupByBuiltFor", "Built for")}</SelectItem>
             </SelectContent>
           </Select>
           <Button asChild>
             <Link to={`/pipelines/${pipelineId}/add`}>
               <Plus className="mr-2 h-4 w-4" />
-              Add items
+              {t("pipelines.board.addItem", "Add items")}
             </Link>
           </Button>
           <Button variant="outline" size="icon" asChild>
-            <Link to={`/pipelines/${pipelineId}/settings`} aria-label="Pipeline settings" title="Pipeline settings">
+            <Link to={`/pipelines/${pipelineId}/settings`} aria-label={t("pipelines.settings.title", "Pipeline settings")} title={t("pipelines.settings.title", "Pipeline settings")}>
               <Settings className="h-4 w-4" />
             </Link>
           </Button>
@@ -1952,6 +1958,7 @@ export function PipelineItemDetail() {
 }
 
 export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: string; caseId: string }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -2288,11 +2295,11 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Pipelines", href: "/pipelines" },
-      { label: pipeline.data?.name ?? detail?.pipeline.name ?? "Pipeline", href: `/pipelines/${pipelineId}` },
-      { label: detail?.case.title ?? "Item" },
+      { label: t("pipelines.title", "Pipelines"), href: "/pipelines" },
+      { label: pipeline.data?.name ?? detail?.pipeline.name ?? t("pipelines.board.pipeline", "Pipeline"), href: `/pipelines/${pipelineId}` },
+      { label: detail?.case.title ?? t("pipelines.item", "Item") },
     ]);
-  }, [detail?.case.title, detail?.pipeline.name, pipeline.data?.name, pipelineId, setBreadcrumbs]);
+  }, [detail?.case.title, detail?.pipeline.name, pipeline.data?.name, pipelineId, setBreadcrumbs, t]);
 
   const invalidateItem = useCallback(async () => {
     await Promise.all([
@@ -4177,6 +4184,7 @@ function formatShortDate(value: Date | string) {
 }
 
 function PipelineAddItems({ pipelineId }: { pipelineId: string }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -4194,11 +4202,11 @@ function PipelineAddItems({ pipelineId }: { pipelineId: string }) {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Pipelines", href: "/pipelines" },
-      { label: pipeline.data?.name ?? "Pipeline", href: `/pipelines/${pipelineId}` },
-      { label: "Add items" },
+      { label: t("pipelines.title", "Pipelines"), href: "/pipelines" },
+      { label: pipeline.data?.name ?? t("pipelines.board.pipeline", "Pipeline"), href: `/pipelines/${pipelineId}` },
+      { label: t("pipelines.board.addItem", "Add items") },
     ]);
-  }, [pipeline.data?.name, pipelineId, setBreadcrumbs]);
+  }, [pipeline.data?.name, pipelineId, setBreadcrumbs, t]);
 
   const fields = intake.data?.fields ?? [];
   const errors = useMemo(() => validateDraftRows(rows, fields), [fields, rows]);
@@ -4834,6 +4842,7 @@ function ReviewQueueSection({
 }
 
 export function ReviewQueue() {
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
@@ -4846,8 +4855,8 @@ export function ReviewQueue() {
   const [detailRow, setDetailRow] = useState<ReviewQueueRow | null>(null);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Review queue" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: t("pipelines.reviewQueue.title", "Review queue") }]);
+  }, [setBreadcrumbs, t]);
 
   const attentionQuery = useQuery({
     queryKey: selectedCompanyId ? queryKeys.pipelines.attention(selectedCompanyId) : ["pipelines", "attention", "none"],
@@ -5160,13 +5169,14 @@ const LEARNINGS_PAGE_SIZE = 100;
 const LEARNING_EVENT_TYPES = "review_decided,transition_forced";
 
 export function Learnings() {
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Learnings" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: t("pipelines.learnings.title", "Learnings") }]);
+  }, [setBreadcrumbs, t]);
 
   const learningsQuery = useQuery({
     queryKey: selectedCompanyId

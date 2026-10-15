@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { CompanySecret, UserSecretDefinition } from "@paperclipai/shared";
 import {
@@ -39,6 +40,7 @@ export function SetMyUserSecretDialog({
   onOpenChange: (open: boolean) => void;
   onSaved?: (secret: CompanySecret) => void;
 }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [value, setValue] = useState("");
@@ -75,7 +77,7 @@ export function SetMyUserSecretDialog({
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.myUserSecrets(companyId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.userDefinitions(companyId) });
       pushToast({
-        title: existingSecret ? "Value updated" : "Value saved",
+        title: existingSecret ? t("secrets.mySecrets.valueUpdated", "Value updated") : t("secrets.mySecrets.valueSaved", "Value saved"),
         body: definition?.name,
         tone: "success",
       });
@@ -100,14 +102,13 @@ export function SetMyUserSecretDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {existingSecret ? "Update your value" : "Set your value"}
+            {existingSecret ? t("secrets.mySecrets.updateDialogTitle", "Update your value") : t("secrets.mySecrets.setDialogTitle", "Set your value")}
             <UserSecretChip />
           </DialogTitle>
           <DialogDescription>
             {definition ? (
               <>
-                This value is yours only. It is used when you are the user responsible for a run that
-                needs <span className="font-mono">{definition.key}</span>.
+                {t("secrets.mySecrets.dialogDesc", "This value is yours only. It is used when you are the user responsible for a run that needs {{key}}.", { key: definition.key })}
               </>
             ) : null}
           </DialogDescription>
@@ -136,8 +137,7 @@ export function SetMyUserSecretDialog({
                   autoFocus
                 />
                 <p className="text-(length:--text-micro) text-muted-foreground">
-                  Points at your own credential in the configured provider. Paperclip stores the
-                  reference, not the value.
+                  {t("secrets.mySecrets.externalRefHelp", "Points at your own credential in the configured provider. Paperclip stores the reference, not the value.")}
                 </p>
               </div>
             ) : (
@@ -151,7 +151,7 @@ export function SetMyUserSecretDialog({
                   autoFocus
                 />
                 <p className="text-(length:--text-micro) text-muted-foreground">
-                  Stored encrypted. Never shown back to anyone, including admins.
+                  {t("secrets.mySecrets.encryptedHelp", "Stored encrypted. Never shown back to anyone, including admins.")}
                 </p>
               </div>
             )}
@@ -162,10 +162,10 @@ export function SetMyUserSecretDialog({
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={save.isPending}>
-            Cancel
+            {t("secrets.dialogs.cancel", "Cancel")}
           </Button>
           <Button onClick={() => save.mutate()} disabled={!canSave || save.isPending}>
-            {save.isPending ? "Saving…" : existingSecret ? "Update value" : "Save value"}
+            {save.isPending ? t("pipelines.stageSecrets.saving", "Saving…") : existingSecret ? t("secrets.mySecrets.updateValue", "Update value") : t("secrets.mySecrets.setValue", "Save value")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { KeyRound, Save } from "lucide-react";
 import type { CompanySecret, RoutineEnvConfig } from "@paperclipai/shared";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,8 @@ export function StageSecretsPanel({
   saving,
   dirty,
 }: StageSecretsPanelProps) {
+  const { t } = useTranslation();
+
   // No backing automation/assignee → nothing can receive secrets at runtime.
   // Point the user at Automation instead of creating a hidden routine just
   // because the Secrets tab was opened.
@@ -54,14 +57,14 @@ export function StageSecretsPanel({
     return (
       <EmptyState
         icon={KeyRound}
-        message="Secrets are available only to step automation. Pick an agent to run this step, then add the secrets it needs."
-        action="Set up automation"
+        message={t("pipelines.stageSecrets.secretsAvailableOnly", "Secrets are available only to step automation. Pick an agent to run this step, then add the secrets it needs.")}
+        action={t("pipelines.stageSecrets.setupAutomation", "Set up automation")}
         onAction={onSetupAutomation}
       />
     );
   }
 
-  const displayName = agentName?.trim() || "the responsible agent";
+  const displayName = agentName?.trim() || t("pipelines.stageSecrets.responsibleAgent", "the responsible agent");
 
   return (
     <div className="space-y-5">
@@ -72,15 +75,16 @@ export function StageSecretsPanel({
           <KeyRound className="h-3.5 w-3.5 mt-0.5 shrink-0" />
         )}
         <p>
-          These env vars are injected when{" "}
-          <span className="font-medium text-foreground">{displayName}</span> runs this step. They override
-          matching project and agent env on collisions. <span className="font-mono">PAPERCLIP_*</span> names
-          are reserved.
+          {t("pipelines.stageSecrets.envNoticePrefix", "These env vars are injected when ")}
+          <span className="font-medium text-foreground">{displayName}</span>
+          {t("pipelines.stageSecrets.envNoticeSuffix", " runs this step. They override matching project and agent env on collisions. ")}
+          <span className="font-mono">PAPERCLIP_*</span>
+          {t("pipelines.stageSecrets.envNoticeReserved", " names are reserved.")}
         </p>
       </div>
 
       {secretsLoading ? (
-        <p className="text-sm text-muted-foreground">Loading secrets…</p>
+        <p className="text-sm text-muted-foreground">{t("pipelines.stageSecrets.loadingSecrets", "Loading secrets…")}</p>
       ) : (
         <EnvironmentVariablesEditor
           value={value}
@@ -93,10 +97,11 @@ export function StageSecretsPanel({
       <div className="flex items-center gap-3">
         <Button type="button" onClick={onSave} disabled={!dirty || saving}>
           <Save className="h-4 w-4 mr-1.5" />
-          {saving ? "Saving…" : "Save secrets"}
+          {saving ? t("pipelines.stageSecrets.saving", "Saving…") : t("pipelines.stageSecrets.saveSecrets", "Save secrets")}
         </Button>
-        {dirty && !saving ? <span className="text-xs text-muted-foreground">Unsaved changes</span> : null}
+        {dirty && !saving ? <span className="text-xs text-muted-foreground">{t("pipelines.stageSecrets.unsavedChanges", "Unsaved changes")}</span> : null}
       </div>
     </div>
   );
 }
+

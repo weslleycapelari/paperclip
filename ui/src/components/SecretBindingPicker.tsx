@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, KeyRound, Loader2, Plus, X } from "lucide-react";
 import type { CompanySecret, SecretVersionSelector } from "@paperclipai/shared";
@@ -94,6 +95,7 @@ export function SecretBindingPicker({
   disabled,
   statusFilter = ["active"],
 }: SecretBindingPickerProps) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
   const [createOpen, setCreateOpen] = useState(false);
@@ -148,7 +150,7 @@ export function SecretBindingPicker({
       setCreateError(null);
     },
     onError: (error) => {
-      setCreateError(error instanceof Error ? error.message : "Failed to create secret");
+      setCreateError(error instanceof Error ? error.message : t("secrets.binding.failedToCreate", "Failed to create secret"));
     },
   });
 
@@ -169,7 +171,7 @@ export function SecretBindingPicker({
               onClick={() => onChange(null)}
               disabled={disabled}
             >
-              <X className="h-3 w-3" /> Clear
+              <X className="h-3 w-3" /> {t("secrets.binding.clear", "Clear")}
             </button>
           ) : null}
         </div>
@@ -193,7 +195,7 @@ export function SecretBindingPicker({
             }}
             disabled={disabled || secretsQuery.isPending}
           >
-            <option value="">{secretsQuery.isPending ? "Loading…" : placeholder}</option>
+            <option value="">{secretsQuery.isPending ? t("secrets.binding.loading", "Loading…") : placeholder}</option>
             {selectedMissing && value ? (
               <option value={value.secretId}>
                 {missingHint
@@ -221,7 +223,7 @@ export function SecretBindingPicker({
               onChange({ ...value, version: next });
             }}
             disabled={disabled || !value || !selectedSecret}
-            aria-label="Version"
+            aria-label={t("secrets.binding.version", "Version")}
           >
             <option value={VERSION_LATEST}>latest</option>
             {selectedSecret
@@ -243,7 +245,7 @@ export function SecretBindingPicker({
           size="sm"
           onClick={() => setCreateOpen(true)}
           disabled={disabled || !selectedCompanyId}
-          aria-label="Create secret"
+          aria-label={t("secrets.binding.createSecretAria", "Create secret")}
         >
           <Plus className="h-3.5 w-3.5" />
         </Button>
@@ -251,32 +253,31 @@ export function SecretBindingPicker({
 
       {selectedSecret ? (
         <p className={cn("text-(length:--text-micro) text-muted-foreground", statusTone(selectedSecret.status))}>
-          {selectedSecret.status !== "active" ? `Status: ${selectedSecret.status}. ` : null}
-          Bound to {versionDisplay(value?.version)} · {selectedSecret.key}
+          {selectedSecret.status !== "active" ? t("secrets.binding.statusBound", "Status: {{status}}. Bound to {{version}} · {{key}}", { status: selectedSecret.status, version: versionDisplay(value?.version), key: selectedSecret.key }) : t("secrets.binding.boundTo", "Bound to {{version}} · {{key}}", { version: versionDisplay(value?.version), key: selectedSecret.key })}
         </p>
       ) : crossCompanyHint ? (
         <p className="text-(length:--text-micro) text-muted-foreground flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
-          Owned by {crossCompanyHint.companyName ? `the ${crossCompanyHint.companyName} organization` : "another organization"}. The binding keeps working; selecting a secret from this list re-points it here.
+          {t("secrets.binding.ownedByOrg", "Owned by {{org}}. The binding keeps working; selecting a secret from this list re-points it here.", { org: crossCompanyHint.companyName ? `the ${crossCompanyHint.companyName} organization` : "another organization" })}
         </p>
       ) : missingHint ? (
         <p className="text-(length:--text-micro) text-destructive flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
           {missingHint.status === "deleted"
-            ? "The previously selected secret was deleted. Pick another or remove the binding."
-            : `This secret is ${missingHint.status}; runs cannot resolve it until it is active again.`}
+            ? t("secrets.binding.deletedNotice", "The previously selected secret was deleted. Pick another or remove the binding.")
+            : t("secrets.binding.notActiveNotice", "This secret is {{status}}; runs cannot resolve it until it is active again.", { status: missingHint.status })}
         </p>
       ) : hintsPending ? (
         <p className="text-(length:--text-micro) text-muted-foreground flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
           {hintsContext?.status === "error"
-            ? "Could not load this secret reference's details."
-            : "Checking this secret reference…"}
+            ? t("secrets.binding.couldNotLoadRef", "Could not load this secret reference's details.")
+            : t("secrets.binding.checkingRef", "Checking this secret reference…")}
         </p>
       ) : selectedMissing ? (
         <p className="text-(length:--text-micro) text-destructive flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
-          The previously selected secret is no longer available. Pick another or remove the binding.
+          {t("secrets.binding.noLongerAvailable", "The previously selected secret is no longer available. Pick another or remove the binding.")}
         </p>
       ) : (filteredSecrets.length === 0 && !secretsQuery.isPending) ? (
         <p className="text-(length:--text-micro) text-muted-foreground">{emptyHint}</p>
@@ -285,7 +286,7 @@ export function SecretBindingPicker({
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Create new secret</DialogTitle>
+            <DialogTitle>{t("secrets.binding.createNewSecretTitle", "Create new secret")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>

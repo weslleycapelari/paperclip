@@ -3,6 +3,7 @@ import { SkillBinaryFile } from "../components/SkillBinaryFile";
 import { SkillSourceProvenance } from "../components/SkillSourceProvenance";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -276,6 +277,7 @@ export function SkillStudio() {
   const { skillId = "" } = useParams<{ skillId: string }>();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
@@ -309,22 +311,22 @@ export function SkillStudio() {
     setBreadcrumbs(
       isCreateMode
         ? [
-            { label: "Skills", href: "/skills" },
-            { label: "Studio", href: "/skills/studio" },
-            { label: "New skill" },
+            { label: t("skills.studio.skills", "Skills"), href: "/skills" },
+            { label: t("skills.studio.studio", "Studio"), href: "/skills/studio" },
+            { label: t("skills.studio.newSkill", "New skill") },
           ]
         : skill
         ? [
-            { label: "Skills", href: "/skills" },
-            { label: "Studio", href: "/skills/studio" },
+            { label: t("skills.studio.skills", "Skills"), href: "/skills" },
+            { label: t("skills.studio.studio", "Studio"), href: "/skills/studio" },
             { label: skill.name },
           ]
         : [
-            { label: "Skills", href: "/skills" },
-            { label: "Studio" },
+            { label: t("skills.studio.skills", "Skills"), href: "/skills" },
+            { label: t("skills.studio.studio", "Studio") },
           ],
     );
-  }, [isCreateMode, setBreadcrumbs, skill]);
+  }, [isCreateMode, setBreadcrumbs, skill, t]);
 
   // Record a per-browser visit whenever a skill successfully opens, powering the
   // landing's "Recently visited" section (PAP-13150).
@@ -441,6 +443,7 @@ function StudioNewSkillPanel({
   forkLoading: boolean;
   forkError: boolean;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useOptionalToastActions();
@@ -520,33 +523,33 @@ function StudioNewSkillPanel({
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6">
       <div className="space-y-1">
         <h1 className="text-lg font-semibold text-foreground">
-          {draft.forkedFromSkillId ? "Fork skill" : "Create a new skill"}
+          {draft.forkedFromSkillId ? t("skills.studio.forkSkill", "Fork skill") : t("skills.studio.createNewSkill", "Create a new skill")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Create an editable organization skill and open it directly in Studio.
+          {t("skills.studio.createNewSkillDescription", "Create an editable organization skill and open it directly in Studio.")}
         </p>
       </div>
 
       {draft.forkedFromName ? (
         <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
           <GitFork className="h-4 w-4" />
-          Forking {draft.forkedFromName}
+          {t("skills.studio.forking", "Forking {{name}}", { name: draft.forkedFromName })}
         </div>
       ) : forkError ? (
         <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           <AlertTriangle className="h-4 w-4" />
-          Fork source not found. You can still create a blank skill.
+          {t("skills.studio.forkSourceNotFound", "Fork source not found. You can still create a blank skill.")}
         </div>
       ) : null}
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Basics</h2>
-          <p className="text-xs text-muted-foreground">Name the skill and set the route-safe slug.</p>
+          <h2 className="text-sm font-medium text-foreground">{t("skills.studio.basics", "Basics")}</h2>
+          <p className="text-xs text-muted-foreground">{t("skills.studio.basicsDescription", "Name the skill and set the route-safe slug.")}</p>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="skill-name">Name</Label>
+            <Label htmlFor="skill-name">{t("skills.studio.nameLabel", "Name")}</Label>
             <Input
               id="skill-name"
               value={draft.name}
@@ -564,7 +567,7 @@ function StudioNewSkillPanel({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="skill-slug">Slug</Label>
+            <Label htmlFor="skill-slug">{t("skills.studio.slugLabel", "Slug")}</Label>
             <Input
               id="skill-slug"
               value={draft.slug}
@@ -579,7 +582,7 @@ function StudioNewSkillPanel({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="skill-tagline">Tagline</Label>
+          <Label htmlFor="skill-tagline">{t("skills.studio.taglineLabel", "Tagline")}</Label>
           <Textarea
             id="skill-tagline"
             value={draft.tagline}
@@ -601,18 +604,18 @@ function StudioNewSkillPanel({
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Appearance</h2>
-          <p className="text-xs text-muted-foreground">Tune how the skill appears in the store and Studio switcher.</p>
+          <h2 className="text-sm font-medium text-foreground">{t("skills.studio.appearance", "Appearance")}</h2>
+          <p className="text-xs text-muted-foreground">{t("skills.studio.appearanceDescription", "Tune how the skill appears in the store and Studio switcher.")}</p>
         </div>
         <div className="flex items-center gap-3">
           <SkillCardIcon card={previewCard} size={48} />
           <div className="min-w-0">
             <div className="truncate text-sm font-medium">{previewCard.name}</div>
-            <div className="truncate text-xs text-muted-foreground">{draft.tagline || "No tagline yet."}</div>
+            <div className="truncate text-xs text-muted-foreground">{draft.tagline || t("skills.studio.noTaglineYet", "No tagline yet.")}</div>
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Color</Label>
+          <Label>{t("skills.studio.colorLabel", "Color")}</Label>
           <div className="flex flex-wrap items-center gap-2">
             {SKILL_CREATE_ACCENTS.map((color) => (
               <button
@@ -636,7 +639,7 @@ function StudioNewSkillPanel({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="skill-categories">Categories</Label>
+          <Label htmlFor="skill-categories">{t("skills.studio.categoriesLabel", "Categories")}</Label>
           <Input
             id="skill-categories"
             value={categoryDraft}
@@ -648,8 +651,8 @@ function StudioNewSkillPanel({
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Sharing</h2>
-          <p className="text-xs text-muted-foreground">Choose who can discover this skill inside Paperclip.</p>
+          <h2 className="text-sm font-medium text-foreground">{t("skills.studio.sharing", "Sharing")}</h2>
+          <p className="text-xs text-muted-foreground">{t("skills.studio.sharingDescription", "Choose who can discover this skill inside Paperclip.")}</p>
         </div>
         <div className="grid gap-2 sm:grid-cols-3">
           {(["company", "private"] as const).map((scope) => (
@@ -662,9 +665,9 @@ function StudioNewSkillPanel({
                 draft.sharingScope === scope ? "border-foreground bg-accent/50" : "border-border",
               )}
             >
-              <span className="block font-medium">{scope === "company" ? "Organization" : "Private"}</span>
+              <span className="block font-medium">{scope === "company" ? t("skills.studio.organization", "Organization") : t("skills.studio.private", "Private")}</span>
               <span className="mt-1 block text-xs text-muted-foreground">
-                {scope === "company" ? "Visible inside this organization." : "Only visible in your library."}
+                {scope === "company" ? t("skills.studio.visibleOrg", "Visible inside this organization.") : t("skills.studio.visiblePrivate", "Only visible in your library.")}
               </span>
             </button>
           ))}
@@ -673,14 +676,14 @@ function StudioNewSkillPanel({
             disabled
             className="rounded-md border border-dashed border-border px-3 py-2 text-left text-sm text-muted-foreground"
           >
-            <span className="block font-medium">Public</span>
-            <span className="mt-1 block text-xs">Coming later.</span>
+            <span className="block font-medium">{t("skills.studio.public", "Public")}</span>
+            <span className="mt-1 block text-xs">{t("skills.studio.comingLater", "Coming later.")}</span>
           </button>
         </div>
       </section>
 
       <details className="rounded-md border border-border px-3 py-2">
-        <summary className="cursor-pointer text-sm font-medium text-foreground">Starter content</summary>
+        <summary className="cursor-pointer text-sm font-medium text-foreground">{t("skills.studio.starterContent", "Starter content")}</summary>
         <Textarea
           value={draft.markdown}
           onChange={(event) => patchDraft({ markdown: event.target.value })}
@@ -690,11 +693,11 @@ function StudioNewSkillPanel({
 
       <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
         <Button variant="ghost" onClick={() => navigate("/skills/studio")} disabled={createSkill.isPending}>
-          Cancel
+          {t("skills.sources.cancel", "Cancel")}
         </Button>
         <Button onClick={() => createSkill.mutate()} disabled={createSkill.isPending || !nameValid}>
           <FilePlus className="h-4 w-4" />
-          {createSkill.isPending ? "Creating..." : draft.forkedFromSkillId ? "Create fork" : "Create skill"}
+          {createSkill.isPending ? t("skills.studio.creating", "Creating...") : draft.forkedFromSkillId ? t("skills.studio.createFork", "Create fork") : t("skills.studio.createSkill", "Create skill")}
         </Button>
       </div>
     </div>
@@ -720,6 +723,7 @@ function StudioEmptyState({
   onSelectSkill: (skillId: string) => void;
   onCreateNew: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex h-full min-h-0 flex-col">
@@ -735,8 +739,8 @@ function StudioEmptyState({
         <div className="flex flex-1 items-center justify-center">
           <EmptyState
             icon={FileCode}
-            message={skillsLoading ? "Loading skills..." : "Select a skill to open Studio."}
-            action="Create a new skill"
+            message={skillsLoading ? t("skills.studio.loadingSkills", "Loading skills...") : t("skills.studio.selectSkillToOpen", "Select a skill to open Studio.")}
+            action={t("skills.studio.createNewSkill", "Create a new skill")}
             onAction={onCreateNew}
           />
         </div>
@@ -762,6 +766,7 @@ function StudioLanding({
   onSelectSkill: (skillId: string) => void;
   onCreateNew: () => void;
 }) {
+  const { t } = useTranslation();
   // Recency-sorted list, enriched with the last human editor (PAP-13149) — the
   // source for both landing sections. Kept separate from the alphabetical
   // switcher list so each cache stays sorted the way its consumer expects.
@@ -806,20 +811,20 @@ function StudioLanding({
           />
           <Button variant="ghost" size="sm" className="ml-auto" onClick={onCreateNew}>
             <Plus className="mr-1.5 h-3.5 w-3.5" />
-            New skill
+            {t("skills.studio.newSkill", "New skill")}
           </Button>
         </header>
         <div className="min-h-0 flex-1 overflow-auto">
           <div className="mx-auto w-full max-w-3xl space-y-8 px-4 py-8">
             {visited.length > 0 ? (
               <StudioLandingSection
-                title="Recently visited"
+                title={t("skills.studio.recentlyVisited", "Recently visited")}
                 skills={visited}
                 onSelectSkill={onSelectSkill}
               />
             ) : null}
             <StudioLandingSection
-              title="Recently updated"
+              title={t("skills.studio.recentlyUpdated", "Recently updated")}
               skills={updated}
               onSelectSkill={onSelectSkill}
             />
@@ -937,6 +942,7 @@ function StudioShell({
   skills: CompanySkillListItem[];
   skillsLoading: boolean;
 }) {
+  const { t } = useTranslation();
   const skillId = skill.id;
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1273,6 +1279,7 @@ function SkillPane({
   onDirtyChange: (dirty: boolean) => void;
   onEditACopy: () => void;
 }) {
+  const { t } = useTranslation();
   const skillId = skill.id;
   const queryClient = useQueryClient();
   const onError = useMutationErrorToast();
@@ -1484,8 +1491,8 @@ function SkillPane({
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
             <div className="min-w-0 flex-1">
               <p>
-                {skill.metadata?.skillSourceId ? "This skill is synced from GitHub and is read-only." : skill.editableReason ?? "This skill is read-only because it comes from an external source."}
-                {" "}Make an editable copy to change it — the original stays untouched.
+                {skill.metadata?.skillSourceId ? t("skills.studio.syncedFromGithub", "This skill is synced from GitHub and is read-only.") : skill.editableReason ?? t("skills.studio.readOnlyExternal", "This skill is read-only because it comes from an external source.")}
+                {" "}{t("skills.studio.makeEditableCopyNotice", "Make an editable copy to change it — the original stays untouched.")}
               </p>
               <Button
                 type="button"
@@ -1494,7 +1501,7 @@ function SkillPane({
                 onClick={onEditACopy}
               >
                 <GitFork className="mr-1.5 h-3.5 w-3.5" />
-                Make a copy
+                {t("skills.studio.makeCopy", "Make a copy")}
               </Button>
             </div>
           </div>
@@ -1506,16 +1513,16 @@ function SkillPane({
           </span>
           <div className="flex items-center gap-2">
             {readOnly ? (
-              <Badge variant="secondary">Read-only</Badge>
+              <Badge variant="secondary">{t("skills.studio.readOnly", "Read-only")}</Badge>
             ) : (
               <>
-                {dirty && <Badge variant="secondary">Unsaved</Badge>}
+                {dirty && <Badge variant="secondary">{t("skills.studio.unsaved", "Unsaved")}</Badge>}
                 <Button
                   size="sm"
                   disabled={!dirty || saveMutation.isPending}
                   onClick={() => saveMutation.mutate()}
                 >
-                  {saveMutation.isPending ? "Saving…" : "Save"}
+                  {saveMutation.isPending ? t("skills.studio.saving", "Saving…") : t("skills.studio.save", "Save")}
                 </Button>
               </>
             )}

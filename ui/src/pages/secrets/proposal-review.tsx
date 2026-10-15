@@ -1,5 +1,6 @@
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Copy, Fingerprint, KeyRound, Link2, ShieldAlert, Variable, ServerCog } from "lucide-react";
 import type {
@@ -106,9 +107,12 @@ export function ProposalJustification({
   justification: string;
   className?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className={cn("space-y-0.5", className)}>
-      <p className="text-(length:--text-micro) text-muted-foreground">Reason given by the agent</p>
+      <p className="text-(length:--text-micro) text-muted-foreground">
+        {t("secrets.proposals.reasonGivenByAgent", "Reason given by the agent")}
+      </p>
       <p className="whitespace-pre-wrap break-words text-xs text-foreground/80">
         “{justification}”
       </p>
@@ -155,6 +159,7 @@ export function DeliveryBadge({ configPath }: { configPath: string | null }) {
 
 /** Distinct "Proposed" pill used wherever a proposal is inlined among live rows. */
 export function ProposedBadge({ className }: { className?: string }) {
+  const { t } = useTranslation();
   return (
     <Badge
       variant="outline"
@@ -164,7 +169,7 @@ export function ProposedBadge({ className }: { className?: string }) {
         className,
       )}
     >
-      <ShieldAlert className="size-3" /> Proposed
+      <ShieldAlert className="size-3" /> {t("secrets.proposals.proposed", "Proposed")}
     </Badge>
   );
 }
@@ -381,6 +386,7 @@ function ApproveDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useTranslation();
   const isSecret = draft?.proposal.kind === "secret";
   const previewName = draft
     ? draft.folder.trim()
@@ -500,16 +506,16 @@ function ApproveDialog({
 
             <DialogFooter>
               <Button variant="ghost" onClick={onCancel} disabled={pending}>
-                Cancel
+                {t("secrets.dialogs.cancel", "Cancel")}
               </Button>
               <Button onClick={onConfirm} disabled={pending || !canConfirm}>
                 {pending
-                  ? "Approving…"
+                  ? t("secrets.proposals.approving", "Approving…")
                   : isSecret
-                    ? "Approve & create"
+                    ? t("secrets.proposals.approveAndCreate", "Approve & create")
                     : draft.cascade
-                      ? "Approve secret & bind"
-                      : "Approve binding"}
+                      ? t("secrets.proposals.approveSecretAndBind", "Approve secret & bind")
+                      : t("secrets.proposals.approveBinding", "Approve binding")}
               </Button>
             </DialogFooter>
           </>
@@ -598,6 +604,7 @@ function RejectDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useTranslation();
   const canConfirm = reason.trim().length > 0;
   return (
     <Dialog open={Boolean(proposal)} onOpenChange={(open) => !open && onCancel()}>
@@ -630,10 +637,12 @@ function RejectDialog({
             ) : null}
             <DialogFooter>
               <Button variant="ghost" onClick={onCancel} disabled={pending}>
-                Cancel
+                {t("secrets.dialogs.cancel", "Cancel")}
               </Button>
               <Button variant="destructive" onClick={onConfirm} disabled={pending || !canConfirm}>
-                {pending ? "Rejecting…" : "Reject"}
+                {pending
+                  ? t("secrets.proposals.rejecting", "Rejecting…")
+                  : t("secrets.proposals.reject", "Reject")}
               </Button>
             </DialogFooter>
           </>
@@ -660,6 +669,7 @@ export function ProposalActions({
   disabled?: boolean;
   size?: "sm" | "xs";
 }) {
+  const { t } = useTranslation();
   const blocked = !proposal.viewerCanApprove;
   const heightClass = size === "xs" ? "h-7 px-2 text-xs" : "";
   const approveButton = (
@@ -669,7 +679,7 @@ export function ProposalActions({
       disabled={disabled || blocked}
       onClick={() => onApprove(proposal)}
     >
-      Approve
+      {t("secrets.proposals.approve", "Approve")}
     </Button>
   );
   return (
@@ -681,7 +691,8 @@ export function ProposalActions({
               <span tabIndex={0}>{approveButton}</span>
             </TooltipTrigger>
             <TooltipContent className="max-w-72">
-              {proposal.approveBlockReason ?? "You don’t have permission to approve this."}
+              {proposal.approveBlockReason ??
+                t("secrets.proposals.noPermission", "You don’t have permission to approve this.")}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -695,7 +706,7 @@ export function ProposalActions({
         disabled={disabled}
         onClick={() => onReject(proposal)}
       >
-        Reject
+        {t("secrets.proposals.reject", "Reject")}
       </Button>
     </div>
   );
