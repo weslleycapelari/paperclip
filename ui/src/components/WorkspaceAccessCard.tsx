@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ExternalLink, Loader2, Play, ScrollText, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,15 +31,6 @@ const STATE_BADGE_CLASSES: Record<ActiveWorkspaceAccessState, string> = {
   failed: "border-destructive/50 text-destructive",
 };
 
-const STATE_LABELS: Record<ActiveWorkspaceAccessState, string> = {
-  provisioning: "Provisioning",
-  validating: "Validating clone",
-  ready: "Ready",
-  degraded: "Degraded",
-  repairing: "Repairing",
-  failed: "Failed",
-};
-
 const ACTION_ICONS = {
   open: ExternalLink,
   start: Play,
@@ -64,6 +56,7 @@ export function WorkspaceAccessCard({
   onViewLogs: () => void;
   errorMessage?: string | null;
 }) {
+  const { t } = useTranslation();
   const Icon = ACTION_ICONS[access.action.kind];
   const isWaiting = access.action.kind === "wait";
   const handlers: Record<WorkspaceAccessState["action"]["kind"], () => void> = {
@@ -76,6 +69,23 @@ export function WorkspaceAccessCard({
   const SecondaryNoticeIcon = access.secondaryNotice
     ? ACTION_ICONS[access.secondaryNotice.action.kind]
     : null;
+
+  const getStateLabel = (state: ActiveWorkspaceAccessState) => {
+    switch (state) {
+      case "provisioning":
+        return t("access.workspaceAccess.provisioning", { defaultValue: "Provisioning" });
+      case "validating":
+        return t("access.workspaceAccess.validatingClone", { defaultValue: "Validating clone" });
+      case "ready":
+        return t("access.workspaceAccess.ready", { defaultValue: "Ready" });
+      case "degraded":
+        return t("access.workspaceAccess.degraded", { defaultValue: "Degraded" });
+      case "repairing":
+        return t("access.workspaceAccess.repairing", { defaultValue: "Repairing" });
+      case "failed":
+        return t("access.workspaceAccess.failed", { defaultValue: "Failed" });
+    }
+  };
 
   return (
     <Card data-testid="workspace-access-card" data-state={access.state}>
@@ -93,7 +103,7 @@ export function WorkspaceAccessCard({
               {(access.state === "repairing" || access.state === "provisioning") && (
                 <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
               )}
-              {STATE_LABELS[access.state]}
+              {getStateLabel(access.state)}
             </span>
           ) : null}
         </div>
@@ -116,12 +126,16 @@ export function WorkspaceAccessCard({
           </Button>
           {access.state === "ready" && !access.handoffAvailable ? (
             <span className="text-xs text-muted-foreground">
-              Signs in with the snapshot-local credentials captured when this clone was made.
+              {t("access.workspaceAccess.snapshotLocalCredentialsNotice", {
+                defaultValue: "Signs in with the snapshot-local credentials captured when this clone was made.",
+              })}
             </span>
           ) : null}
           {access.state === "ready" && access.handoffAvailable ? (
             <span className="text-xs text-muted-foreground">
-              Uses a single-use login handoff — no password needed.
+              {t("access.workspaceAccess.singleUseHandoffNotice", {
+                defaultValue: "Uses a single-use login handoff — no password needed.",
+              })}
             </span>
           ) : null}
         </div>

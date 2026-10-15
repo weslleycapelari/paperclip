@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import type { Project } from "@paperclipai/shared";
 import { projectsApi } from "../api/projects";
@@ -28,13 +29,6 @@ import { Card } from "@/components/ui/card";
 
 type ProjectSortField = "name" | "updated" | "created" | "targetDate";
 type ProjectSortDir = "asc" | "desc";
-
-const PROJECT_SORT_OPTIONS: Array<{ field: ProjectSortField; label: string }> = [
-  { field: "name", label: "Name" },
-  { field: "updated", label: "Updated" },
-  { field: "created", label: "Created" },
-  { field: "targetDate", label: "Target date" },
-];
 
 function compareProjectNames(left: Project, right: Project) {
   const nameDiff = left.name.localeCompare(right.name, undefined, { sensitivity: "base" });
@@ -78,15 +72,23 @@ function sortProjects(projects: Project[], sortField: ProjectSortField, sortDir:
 }
 
 export function Projects() {
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { openNewProject } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [sortField, setSortField] = useState<ProjectSortField>("name");
   const [sortDir, setSortDir] = useState<ProjectSortDir>("asc");
 
+  const projectSortOptions: Array<{ field: ProjectSortField; label: string }> = useMemo(() => [
+    { field: "name", label: t("projects.sortFields.name", "Name") },
+    { field: "updated", label: t("projects.sortFields.updated", "Updated") },
+    { field: "created", label: t("projects.sortFields.created", "Created") },
+    { field: "targetDate", label: t("projects.sortFields.targetDate", "Target date") },
+  ], [t]);
+
   useEffect(() => {
-    setBreadcrumbs([{ label: "Projects" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: t("projects.title", "Projects") }]);
+  }, [setBreadcrumbs, t]);
 
   const { data: allProjects, isLoading, error } = useQuery({
     queryKey: queryKeys.projects.list(selectedCompanyId!),
@@ -117,10 +119,10 @@ export function Projects() {
 
     return groups;
   }, [membershipsQuery.data, sortedProjects]);
-  const sortLabel = PROJECT_SORT_OPTIONS.find((option) => option.field === sortField)?.label ?? "Name";
+  const sortLabel = projectSortOptions.find((option) => option.field === sortField)?.label ?? "Name";
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Hexagon} message="Select an organization to view projects." />;
+    return <EmptyState icon={Hexagon} message={t("projects.selectOrg", "Select an organization to view projects.")} />;
   }
 
   if (isLoading) {
@@ -132,14 +134,14 @@ export function Projects() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="w-fit text-xs" title="Sort">
+            <Button variant="ghost" size="sm" className="w-fit text-xs" title={t("projects.sort", "Sort")}>
               <ArrowUpDown className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-              <span>Sort: {sortLabel}</span>
+              <span>{t("projects.sortPrefix", "Sort: {{field}}", { field: sortLabel })}</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-44 p-0">
             <div className="p-2 space-y-0.5">
-              {PROJECT_SORT_OPTIONS.map((option) => (
+              {projectSortOptions.map((option) => (
                 <button
                   key={option.field}
                   type="button"
@@ -161,7 +163,7 @@ export function Projects() {
                   {sortField === option.field ? (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Check className="h-3 w-3" />
-                      {sortDir === "asc" ? "Asc" : "Desc"}
+                      {sortDir === "asc" ? t("projects.sortAsc", "Asc") : t("projects.sortDesc", "Desc")}
                     </span>
                   ) : null}
                 </button>
@@ -171,7 +173,7 @@ export function Projects() {
         </Popover>
         <Button size="sm" variant="outline" onClick={openNewProject}>
           <Plus className="h-4 w-4 mr-1" />
-          Add Project
+          {t("projects.addProject", "Add Project")}
         </Button>
       </div>
 
@@ -180,8 +182,8 @@ export function Projects() {
       {!isLoading && projects.length === 0 && (
         <EmptyState
           icon={Hexagon}
-          message="No projects yet."
-          action="Add Project"
+          message={t("projects.noProjectsYet", "No projects yet.")}
+          action={t("projects.addProject", "Add Project")}
           onAction={openNewProject}
         />
       )}
@@ -189,8 +191,8 @@ export function Projects() {
       {projects.length > 0 && (
         <div className="space-y-6">
           {([
-            ["My Projects", groupedProjects.mine],
-            ["Other Projects", groupedProjects.other],
+            [t("projects.myProjects", "My Projects"), groupedProjects.mine],
+            [t("projects.otherProjects", "Other Projects"), groupedProjects.other],
           ] as const).map(([label, sectionProjects]) => {
             if (sectionProjects.length === 0) return null;
 
@@ -199,7 +201,9 @@ export function Projects() {
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-medium">{label}</h2>
                   <span className="text-xs text-muted-foreground">
-                    {sectionProjects.length} project{sectionProjects.length === 1 ? "" : "s"}
+                    {sectionProjects.length === 1
+                      ? t("projects.projectsCount_one", "{{count}} project", { count: 1 })
+                      : t("projects.projectsCount", "{{count}} projects", { count: sectionProjects.length })}
                   </span>
                 </div>
                 <Card className="block py-0 overflow-hidden divide-y divide-border">
@@ -211,6 +215,10 @@ export function Projects() {
                     const starPending = pending && membershipMutation.variables?.starred !== undefined;
                     const joinLeavePending = pending && membershipMutation.variables?.starred === undefined;
                     const starred = isStarred(membershipsQuery.data, "project", project.id);
+                    const taskCount = project.taskCount ?? 0;
+                    const taskCountLabel = taskCount === 1
+                      ? t("projects.tasksCount_one", "{{count}} task", { count: taskCount })
+                      : t("projects.tasksCount", "{{count}} tasks", { count: taskCount });
                     return (
                       <EntityRow
                         key={project.id}
@@ -222,12 +230,17 @@ export function Projects() {
                         className={state === "left" ? "group text-foreground/55" : "group"}
                         trailing={
                           <div className="flex items-center gap-3">
-                            {project.visibility === "private" ? <Lock className="size-4 shrink-0 text-muted-foreground" aria-label="Private project" /> : null}
+                            {project.visibility === "private" ? (
+                              <Lock
+                                className="size-4 shrink-0 text-muted-foreground"
+                                aria-label={t("projects.privateProject", "Private project")}
+                              />
+                            ) : null}
                             <span
                               className="hidden text-xs text-muted-foreground tabular-nums sm:inline"
-                              title={`${formatNumber(project.taskCount ?? 0)} task${(project.taskCount ?? 0) === 1 ? "" : "s"}`}
+                              title={taskCountLabel}
                             >
-                              {formatNumber(project.taskCount ?? 0)} task{(project.taskCount ?? 0) === 1 ? "" : "s"}
+                              {taskCountLabel}
                             </span>
                             {project.budget && (
                               <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">

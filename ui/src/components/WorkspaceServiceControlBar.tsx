@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Check,
   ChevronDown,
@@ -64,24 +65,25 @@ function formatServiceUrl(url: string | null | undefined) {
   return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 }
 
-function statusMeta(entry: WorkspaceServiceControlEntry): { label: string; unhealthy: boolean } {
+function statusMeta(entry: WorkspaceServiceControlEntry, t?: (key: string, def: string) => string): { label: string; unhealthy: boolean } {
+  const tr = t ?? ((_, def) => def);
   switch (entry.state) {
     case "provisioning":
-      return { label: "Provisioning…", unhealthy: false };
+      return { label: tr("workspaces.serviceControlBar.states.provisioning", "Provisioning…"), unhealthy: false };
     case "starting":
-      return { label: "Starting…", unhealthy: false };
+      return { label: tr("workspaces.serviceControlBar.states.starting", "Starting…"), unhealthy: false };
     case "stopping":
-      return { label: "Stopping…", unhealthy: false };
+      return { label: tr("workspaces.serviceControlBar.states.stopping", "Stopping…"), unhealthy: false };
     case "restarting":
-      return { label: "Restarting…", unhealthy: false };
+      return { label: tr("workspaces.serviceControlBar.states.restarting", "Restarting…"), unhealthy: false };
     case "failed":
-      return { label: "Failed", unhealthy: false };
+      return { label: tr("workspaces.serviceControlBar.states.failed", "Failed"), unhealthy: false };
     case "running":
       return entry.healthStatus === "unhealthy"
-        ? { label: "Unhealthy", unhealthy: true }
-        : { label: "Running", unhealthy: false };
+        ? { label: tr("workspaces.serviceControlBar.states.unhealthy", "Unhealthy"), unhealthy: true }
+        : { label: tr("workspaces.serviceControlBar.states.running", "Running"), unhealthy: false };
     default:
-      return { label: "Stopped", unhealthy: false };
+      return { label: tr("workspaces.serviceControlBar.states.stopped", "Stopped"), unhealthy: false };
   }
 }
 
@@ -109,12 +111,17 @@ function StatusIndicator({ entry, className }: { entry: WorkspaceServiceControlE
 }
 
 function CopyUrlButton({ url, disabled }: { url: string; disabled?: boolean }) {
+  const { t } = useTranslation();
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }, []);
-  const copyLabel = copyState === "copied" ? "URL copied" : copyState === "failed" ? "Copy failed" : "Copy URL";
+  const copyLabel = copyState === "copied"
+    ? t("workspaces.serviceControlBar.urlCopied", "URL copied")
+    : copyState === "failed"
+      ? t("workspaces.serviceControlBar.copyFailed", "Copy failed")
+      : t("workspaces.serviceControlBar.copyUrl", "Copy URL");
   return (
     <Button
       variant="ghost"
@@ -147,11 +154,12 @@ function CopyUrlButton({ url, disabled }: { url: string; disabled?: boolean }) {
 }
 
 function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; compact?: boolean }) {
+  const { t } = useTranslation();
   const displayUrl = formatServiceUrl(entry.url) ?? (entry.port ? `:${entry.port}` : null);
   const live = entry.state === "running" && Boolean(entry.url);
 
   if (!displayUrl) {
-    return <span className="font-mono text-xs text-muted-foreground/70">no url</span>;
+    return <span className="font-mono text-xs text-muted-foreground/70">{t("workspaces.serviceControlBar.noUrl", "no url")}</span>;
   }
   return (
     <>
@@ -181,10 +189,10 @@ function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; c
           size="icon-xs"
           disabled={!live}
           className="text-muted-foreground hover:text-foreground"
-          title="Open in new tab"
+          title={t("workspaces.serviceControlBar.openInNewTab", "Open in new tab")}
         >
           {live ? (
-            <a href={entry.url ?? undefined} target="_blank" rel="noreferrer" aria-label="Open in new tab">
+            <a href={entry.url ?? undefined} target="_blank" rel="noreferrer" aria-label={t("workspaces.serviceControlBar.openInNewTab", "Open in new tab")}>
               <ExternalLink className="size-3" />
             </a>
           ) : (
@@ -203,6 +211,7 @@ function ActionSlots({
   entry: Pick<WorkspaceServiceControlEntry, "state" | "canStart">;
   onAction: (action: WorkspaceServiceControlAction) => void;
 }) {
+  const { t } = useTranslation();
   const transitional = isTransitional(entry.state);
   const canStart = entry.canStart ?? true;
 
@@ -214,11 +223,11 @@ function ActionSlots({
         className="w-13 justify-center"
         disabled={!canStart}
         onClick={() => onAction("start")}
-        aria-label="Start"
-        title="Start"
+        aria-label={t("workspaces.serviceControlBar.start", "Start")}
+        title={t("workspaces.serviceControlBar.start", "Start")}
       >
         <Play className="size-3" />
-        Start
+        {t("workspaces.serviceControlBar.start", "Start")}
       </Button>
     );
   }
@@ -231,8 +240,8 @@ function ActionSlots({
           size="icon-xs"
           disabled={!canStart}
           onClick={() => onAction("start")}
-          aria-label="Start"
-          title="Start"
+          aria-label={t("workspaces.serviceControlBar.start", "Start")}
+          title={t("workspaces.serviceControlBar.start", "Start")}
         >
           <Play className="size-3" />
         </Button>
@@ -241,8 +250,8 @@ function ActionSlots({
           size="icon-xs"
           disabled={!canStart}
           onClick={() => onAction("restart")}
-          aria-label="Restart"
-          title="Restart"
+          aria-label={t("workspaces.serviceControlBar.restart", "Restart")}
+          title={t("workspaces.serviceControlBar.restart", "Restart")}
           className="border border-border text-foreground"
         >
           <RotateCcw className="size-3" />
@@ -258,8 +267,8 @@ function ActionSlots({
         size="icon-xs"
         disabled={transitional}
         onClick={() => onAction("stop")}
-        aria-label="Stop"
-        title="Stop"
+        aria-label={t("workspaces.serviceControlBar.stop", "Stop")}
+        title={t("workspaces.serviceControlBar.stop", "Stop")}
         className="border border-border text-foreground"
       >
         <Square className="size-3" />
@@ -269,8 +278,8 @@ function ActionSlots({
         size="icon-xs"
         disabled={transitional || !canStart}
         onClick={() => onAction("restart")}
-        aria-label="Restart"
-        title="Restart"
+        aria-label={t("workspaces.serviceControlBar.restart", "Restart")}
+        title={t("workspaces.serviceControlBar.restart", "Restart")}
         className="border border-border text-foreground"
       >
         <RotateCcw className="size-3" />
@@ -286,6 +295,7 @@ function ServiceDetail({
   entry: WorkspaceServiceControlEntry;
   onViewLogs?: () => void;
 }) {
+  const { t } = useTranslation();
   const detail = entry.exposureDetail ?? (entry.state === "failed" ? entry.failureDetail : null);
   if (!detail) return null;
   const exposureFailed = entry.exposureState === "failed" || entry.exposureState === "cleanup_pending";
@@ -300,7 +310,7 @@ function ServiceDetail({
             onClick={onViewLogs}
             className="font-medium text-foreground underline underline-offset-2 hover:text-foreground/80"
           >
-            View logs
+            {t("workspaces.serviceControlBar.viewLogs", "View logs")}
           </button>
         </>
       ) : null}
@@ -319,7 +329,8 @@ function SingleServiceBar({
   onViewLogs?: () => void;
   className?: string;
 }) {
-  const meta = statusMeta(entry);
+  const { t } = useTranslation();
+  const meta = statusMeta(entry, t);
   return (
     <div className={cn("flex w-full flex-col items-stretch gap-1 sm:w-auto sm:items-end", className)}>
       <div className="rounded-lg border border-border bg-background">
@@ -356,7 +367,8 @@ function ServicePopoverRow({
   entry: WorkspaceServiceControlEntry;
   onAction: (action: WorkspaceServiceControlAction, serviceKey: string | null) => void;
 }) {
-  const meta = statusMeta(entry);
+  const { t } = useTranslation();
+  const meta = statusMeta(entry, t);
   const displayUrl = formatServiceUrl(entry.url);
   const live = entry.state === "running" && Boolean(entry.url);
   const exposureFailed = entry.exposureState === "failed" || entry.exposureState === "cleanup_pending";
@@ -423,6 +435,7 @@ function MultiServiceBar({
   defaultServicesOpen?: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(defaultServicesOpen ?? false);
   const runningCount = services.filter((entry) => entry.state === "running").length;
   const anyTransitional = services.some((entry) => isTransitional(entry.state));
@@ -471,9 +484,9 @@ function MultiServiceBar({
                 ))}
               </div>
               <div className="flex items-center gap-1 border-t border-border px-4 py-2">
-                <Button variant="ghost" size="xs" onClick={() => onAction("start", null)}>Start all</Button>
-                <Button variant="ghost" size="xs" onClick={() => onAction("stop", null)}>Stop all</Button>
-                <Button variant="ghost" size="xs" onClick={() => onAction("restart", null)}>Restart all</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("start", null)}>{t("workspaces.serviceControlBar.startAll", "Start all")}</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("stop", null)}>{t("workspaces.serviceControlBar.stopAll", "Stop all")}</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("restart", null)}>{t("workspaces.serviceControlBar.restartAll", "Restart all")}</Button>
                 {onManageServices ? (
                   <Button
                     variant="link"
@@ -481,7 +494,7 @@ function MultiServiceBar({
                     className="ml-auto text-muted-foreground"
                     onClick={onManageServices}
                   >
-                    Manage in Services tab →
+                    {t("workspaces.serviceControlBar.manageInServices", "Manage in Services tab")} →
                   </Button>
                 ) : null}
               </div>
@@ -495,7 +508,7 @@ function MultiServiceBar({
                 <UrlSegment entry={primary} />
               </>
             ) : (
-              <span className="font-mono text-xs text-muted-foreground/70">no url</span>
+              <span className="font-mono text-xs text-muted-foreground/70">{t("workspaces.serviceControlBar.noUrl", "no url")}</span>
             )}
           </div>
           <div className="mx-3 hidden h-5 w-px bg-border sm:block" />
