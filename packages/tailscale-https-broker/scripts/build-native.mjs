@@ -27,6 +27,11 @@ if (!headerDir) {
 
 mkdirSync(outputDir, { recursive: true });
 const compiler = process.env.CC || "cc";
+const compilerCheck = spawnSync("which", [compiler]);
+if (compilerCheck.status !== 0) {
+  process.stdout.write("[tailscale-https-broker] skipping addon build (no C compiler found)\n");
+  process.exit(0);
+}
 const result = spawnSync(
   compiler,
   [
