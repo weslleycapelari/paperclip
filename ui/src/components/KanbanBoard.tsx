@@ -23,6 +23,7 @@ import { PriorityIcon } from "./PriorityIcon";
 import { SHOW_TASK_PRIORITY_UI } from "../lib/ui-flags";
 import { Identity } from "./Identity";
 import type { Issue, IssueStatus } from "@paperclipai/shared";
+import { t } from "@/i18n";
 import { AlertTriangle } from "lucide-react";
 import { isSuccessfulRunHandoffRequired } from "../lib/successful-run-handoff";
 import { collectSubtreeLiveCounts } from "../lib/liveIssueIds";
@@ -132,7 +133,16 @@ export function getKanbanColumnTone(status: IssueStatus) {
 }
 
 function statusLabel(status: string): string {
-  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const map: Record<string, string> = {
+    backlog: t("issues.statusBacklog", { defaultValue: "Backlog" }),
+    todo: t("issues.statusTodo", { defaultValue: "Todo" }),
+    in_progress: t("issues.statusInProgress", { defaultValue: "In Progress" }),
+    in_review: t("issues.statusInReview", { defaultValue: "In Review" }),
+    blocked: t("issues.statusBlocked", { defaultValue: "Blocked" }),
+    done: t("issues.statusDone", { defaultValue: "Done" }),
+    cancelled: t("issues.statusCancelled", { defaultValue: "Cancelled" }),
+  };
+  return map[status] ?? status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function resolveKanbanTargetStatus(overId: string, issues: Issue[]): IssueStatus | null {
@@ -254,12 +264,12 @@ function KanbanColumn({
             className="mt-1 flex w-full items-center justify-center rounded-md border border-dashed border-border bg-background/70 px-2 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
             onClick={onShowMore}
           >
-            Show {nextRevealCount} more
+            {t("issues.showMoreCount", { count: nextRevealCount, defaultValue: `Show ${nextRevealCount} more` })}
           </button>
         ) : null}
         {issues.length > 0 && (hiddenCount > 0 || issues.length >= visibleCount) ? (
           <p className="px-1 pt-1 text-(length:--text-micro) text-muted-foreground">
-            Showing {visibleIssues.length} of {issues.length}
+            {t("issues.showingVisibleOfTotal", { visible: visibleIssues.length, total: issues.length, defaultValue: `Showing ${visibleIssues.length} of ${issues.length}` })}
           </p>
         ) : null}
       </div>
@@ -339,7 +349,7 @@ function KanbanCard({
               aria-label="Needs next step"
             >
               <AlertTriangle className="h-3 w-3" />
-              Next step
+              {t("issues.nextStep", { defaultValue: "Next step" })}
             </Badge>
           ) : null}
           {isLive && (
@@ -348,16 +358,16 @@ function KanbanCard({
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
               </span>
-              {compact ? "Live" : null}
+              {compact ? t("issues.live", { defaultValue: "Live" }) : null}
             </span>
           )}
           {!isLive && subtreeLiveCount > 0 && (
             <Badge variant="outline"
               className="border-border px-1.5 text-(length:--text-nano) text-muted-foreground"
-              title={`${subtreeLiveCount} sub-task${subtreeLiveCount === 1 ? "" : "s"} running below`}
+              title={t("issues.subtasksRunningBelow", { count: subtreeLiveCount, defaultValue: `${subtreeLiveCount} sub-tasks running below` })}
             >
               <span className="h-2 w-2 shrink-0 rounded-full border border-muted-foreground/60" aria-hidden="true" />
-              {subtreeLiveCount} live below
+              {t("issues.liveBelow", { count: subtreeLiveCount, defaultValue: `${subtreeLiveCount} live below` })}
             </Badge>
           )}
         </div>

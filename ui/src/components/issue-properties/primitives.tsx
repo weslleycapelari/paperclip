@@ -40,11 +40,13 @@ export function PropertyRow({
   label,
   children,
   wrap,
+  dataLabel,
 }: {
   label: ReactNode;
   children: ReactNode;
   /** Opt-in wrapping for chip-collection rows only (§5). Default rows stay one line. */
   wrap?: boolean;
+  dataLabel?: string;
 }) {
   return (
     <div
@@ -59,8 +61,8 @@ export function PropertyRow({
           "text-xs text-muted-foreground shrink-0 w-24 truncate",
           wrap && "mt-0.5",
         )}
-        data-property-label={typeof label === "string" ? label : undefined}
-        title={typeof label === "string" ? label : undefined}
+        data-property-label={dataLabel ?? (typeof label === "string" ? label : undefined)}
+        title={typeof label === "string" ? label : typeof dataLabel === "string" ? dataLabel : undefined}
       >
         {label}
       </span>

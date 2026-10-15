@@ -9,6 +9,7 @@ import { PropertyRow } from "./primitives";
 export function PropertyPicker({
   inline,
   label,
+  displayLabel,
   open,
   onOpenChange,
   triggerContent,
@@ -22,6 +23,7 @@ export function PropertyPicker({
 }: {
   inline?: boolean;
   label: string;
+  displayLabel?: ReactNode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   triggerContent: ReactNode;
@@ -56,7 +58,7 @@ export function PropertyPicker({
     );
     return (
       <div>
-        <PropertyRow label={label} wrap={stacked}>
+        <PropertyRow label={displayLabel ?? label} dataLabel={label} wrap={stacked}>
           <div className="flex min-w-0 max-w-full items-start gap-1.5">
             {triggerContent}
             {inline ? trigger : (
@@ -82,7 +84,7 @@ export function PropertyPicker({
   if (inline) {
     return (
       <div>
-        <PropertyRow label={label} wrap={stacked}>
+        <PropertyRow label={displayLabel ?? label} dataLabel={label} wrap={stacked}>
           <button className={cn(btnCn, stacked && "items-start")} onClick={() => onOpenChange(!open)} aria-expanded={streamlinedUiEnabled ? open : undefined}>
             {triggerContent}
             {streamlinedUiEnabled ? (
@@ -101,7 +103,7 @@ export function PropertyPicker({
   }
 
   return (
-    <PropertyRow label={label} wrap={stacked}>
+    <PropertyRow label={displayLabel ?? label} dataLabel={label} wrap={stacked}>
       <Popover open={open} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>
           <button className={cn(btnCn, stacked && "items-start")} aria-expanded={streamlinedUiEnabled ? open : undefined}>

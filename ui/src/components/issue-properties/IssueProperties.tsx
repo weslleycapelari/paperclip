@@ -11,6 +11,7 @@ import { createPortal } from "react-dom";
 import { PROPERTIES_PANE_HEADER_SLOT_ID } from "../PropertiesPanel";
 import { issueStatusText } from "@/lib/status-colors";
 import { copyTextToClipboard } from "@/lib/clipboard";
+import { useTranslation } from "@/i18n";
 import { Link } from "@/lib/router";
 import {
   deriveOriginatingActor,
@@ -245,6 +246,7 @@ export function IssueProperties({
   documentDeepLink,
   sidePanelContentOnly = false,
 }: IssuePropertiesProps) {
+  const { t } = useTranslation();
   const policyResult = useExecutionPolicy(issue.executionPolicy);
   const policyAvailable = policyResult.success;
   const executionPolicy = policyResult.success ? policyResult.data : null;
@@ -2321,11 +2323,11 @@ export function IssueProperties({
   const propertiesBody = (
     <div className={cn(streamlinedPropertiesEnabled && "task-detail-properties pl-4")}>
       <PropertySection
-        title={streamlinedPropertiesEnabled ? "Work" : "Triage"}
+        title={streamlinedPropertiesEnabled ? t("issues.propSectionWork", { defaultValue: "Work" }) : t("issues.propSectionTriage", { defaultValue: "Triage" })}
         first
         streamlined={streamlinedPropertiesEnabled}
       >
-        <PropertyRow label="Status">
+        <PropertyRow label={t("issues.propStatus", { defaultValue: "Status" })} dataLabel="Status">
           <StatusIcon
             status={issue.status}
             externalConversationState={issue.externalConversationState}
@@ -2338,7 +2340,7 @@ export function IssueProperties({
 
         {/* PAP-411: priority UI is hidden behind SHOW_TASK_PRIORITY_UI. Revive by flipping the flag. */}
         {SHOW_TASK_PRIORITY_UI && (
-          <PropertyRow label="Priority">
+          <PropertyRow label={t("issues.propPriority", { defaultValue: "Priority" })} dataLabel="Priority">
             <PriorityIcon
               priority={issue.priority}
               onChange={(priority) => onUpdate({ priority })}
@@ -2350,6 +2352,7 @@ export function IssueProperties({
         <PropertyPicker
           inline={inline}
           label="Assignee"
+          displayLabel={t("issues.propAssignee", { defaultValue: "Assignee" })}
           open={assigneeOpen}
           onOpenChange={(open) => { setAssigneeOpen(open); if (!open) { setAssigneeSearch(""); setPendingAssignee(null); } }}
           triggerContent={assigneeTrigger}
@@ -2371,6 +2374,7 @@ export function IssueProperties({
           <PropertyPicker
             inline={inline}
             label="Model"
+            displayLabel={t("issues.propModel", { defaultValue: "Model" })}
             open={assigneeOptionsOpen}
             onOpenChange={setAssigneeOptionsOpen}
             triggerContent={assigneeOptionsTrigger}
@@ -2384,6 +2388,7 @@ export function IssueProperties({
         <PropertyPicker
           inline={inline}
           label="Project"
+          displayLabel={t("issues.propProject", { defaultValue: "Project" })}
           open={projectOpen}
           onOpenChange={(open) => { setProjectOpen(open); if (!open) setProjectSearch(""); }}
           triggerContent={projectTrigger}
@@ -2405,6 +2410,7 @@ export function IssueProperties({
         <PropertyPicker
           inline={inline}
           label="Labels"
+          displayLabel={t("issues.propLabels", { defaultValue: "Labels" })}
           open={labelsOpen}
           onOpenChange={(open) => { setLabelsOpen(open); if (!open) setLabelSearch(""); }}
           triggerContent={labelsTrigger}
@@ -2417,10 +2423,11 @@ export function IssueProperties({
         </PropertyPicker>
       </PropertySection>
 
-      <PropertySection title="Relationships" streamlined={streamlinedPropertiesEnabled}>
+      <PropertySection title={t("issues.propSectionRelationships", { defaultValue: "Relationships" })} streamlined={streamlinedPropertiesEnabled}>
         <PropertyPicker
           inline={inline}
           label="Parent"
+          displayLabel={t("issues.propParent", { defaultValue: "Parent" })}
           open={parentOpen}
           onOpenChange={(open) => {
             setParentOpen(open);
@@ -2438,6 +2445,7 @@ export function IssueProperties({
           <PropertyPicker
             inline={inline}
             label="Blocked by"
+            displayLabel={t("issues.propBlockedBy", { defaultValue: "Blocked by" })}
             open={blockedByOpen}
             onOpenChange={(open) => {
               setBlockedByOpen(open);
@@ -2453,7 +2461,7 @@ export function IssueProperties({
           </PropertyPicker>
         ) : inline ? (
           <div>
-            <PropertyRow label="Blocked by" wrap>
+            <PropertyRow label={t("issues.propBlockedBy", { defaultValue: "Blocked by" })} dataLabel="Blocked by" wrap>
               {visibleBlockedByRelations.map((relation) => (
                 <RemovableIssueReferencePill
                   key={relation.id}
@@ -2476,7 +2484,7 @@ export function IssueProperties({
             ) : null}
           </div>
         ) : (
-          <PropertyRow label="Blocked by" wrap>
+          <PropertyRow label={t("issues.propBlockedBy", { defaultValue: "Blocked by" })} dataLabel="Blocked by" wrap>
             {visibleBlockedByRelations.map((relation) => (
               <RemovableIssueReferencePill
                 key={relation.id}
@@ -2505,7 +2513,7 @@ export function IssueProperties({
           </PropertyRow>
         )}
 
-        <PropertyRow label="Blocking" wrap>
+        <PropertyRow label={t("issues.propBlocking", { defaultValue: "Blocking" })} dataLabel="Blocking" wrap>
           {blockingIssues.length > 0 ? (
             <div className="flex flex-col items-start gap-1.5">
               {visibleBlockingIssues.map((relation) => (
@@ -2518,7 +2526,7 @@ export function IssueProperties({
               />
             </div>
           ) : (
-            <span className="text-sm text-muted-foreground">None</span>
+            <span className="text-sm text-muted-foreground">{t("common.none", { defaultValue: "None" })}</span>
           )}
         </PropertyRow>
 
@@ -2526,6 +2534,7 @@ export function IssueProperties({
           <PropertyPicker
             inline={inline}
             label="Subtasks"
+            displayLabel={t("issues.paneSubtasks", { defaultValue: "Subtasks" })}
             open={subtasksOpen}
             onOpenChange={setSubtasksOpen}
             separateTrigger={childIssues.length > 0}
@@ -2537,7 +2546,7 @@ export function IssueProperties({
             {subtasksContent}
           </PropertyPicker>
         ) : !taskChatShellEnabled ? (
-          <PropertyRow label="Sub-tasks" wrap>
+          <PropertyRow label={t("issues.propSubtasks", { defaultValue: "Sub-tasks" })} dataLabel="Sub-tasks" wrap>
             <div className="flex flex-col items-start gap-1.5">
               {visibleChildIssues.map((child) => (
                 <IssueReferencePill key={child.id} issue={child} />
@@ -2554,7 +2563,7 @@ export function IssueProperties({
                   onClick={onAddSubIssue}
                 >
                   <Plus className="h-3 w-3" />
-                  Add sub-task
+                  {t("issues.addSubtask", { defaultValue: "Add sub-task" })}
                 </button>
               ) : null}
             </div>
@@ -2562,7 +2571,11 @@ export function IssueProperties({
         ) : null}
 
         {(!streamlinedPropertiesEnabled || !taskChatShellEnabled) && relatedTasks.length > 0 ? (
-          <PropertyRow label={streamlinedPropertiesEnabled ? "Referenced" : "Related tasks"} wrap>
+          <PropertyRow
+            label={streamlinedPropertiesEnabled ? t("issues.propReferenced", { defaultValue: "Referenced" }) : t("issues.propRelatedTasks", { defaultValue: "Related tasks" })}
+            dataLabel={streamlinedPropertiesEnabled ? "Referenced" : "Related tasks"}
+            wrap
+          >
             <div className="flex flex-col items-start gap-1.5">
               {visibleRelatedTasks.map((related) => (
                 <IssueReferencePill key={related.id} issue={related} />
@@ -2577,7 +2590,7 @@ export function IssueProperties({
         ) : null}
 
         {pullRequests.length > 0 || workProductsError ? (
-          <PropertyRow label="Pull requests" wrap>
+          <PropertyRow label={t("issues.propPullRequests", { defaultValue: "Pull requests" })} dataLabel="Pull requests" wrap>
             <div className="flex min-w-0 flex-col gap-2">
               <IssuePullRequestLinks products={pullRequests} externalObjects={externalObjects?.map((entry) => entry.pill)} />
               {workProductsError ? (
@@ -2596,10 +2609,10 @@ export function IssueProperties({
         />
       </PropertySection>
 
-      <PropertySection title="Execution" streamlined={streamlinedPropertiesEnabled}>
+      <PropertySection title={t("issues.propSectionExecution", { defaultValue: "Execution" })} streamlined={streamlinedPropertiesEnabled}>
         {/* Read-only: agents set the policy, the board does not. */}
         {reviewPolicyBadge ? (
-          <PropertyRow label="Approvals">
+          <PropertyRow label={t("issues.propApprovals", { defaultValue: "Approvals" })} dataLabel="Approvals">
             <PropertyChip title={reviewPolicyBadge.description}>
               <reviewPolicyBadge.Icon className="shrink-0 text-muted-foreground" aria-hidden />
               <span className="min-w-0 truncate">{reviewPolicyBadge.label}</span>
@@ -2608,13 +2621,14 @@ export function IssueProperties({
         ) : null}
 
         {!policyAvailable ? (
-          <PropertyRow label="Execution policy" wrap>
+          <PropertyRow label={t("issues.propExecutionPolicy", { defaultValue: "Execution policy" })} dataLabel="Execution policy" wrap>
             <span role="status" className="text-sm text-muted-foreground">Execution policy unavailable. Refresh to try again.</span>
           </PropertyRow>
         ) : (<>
         <PropertyPicker
           inline={inline}
           label="Reviewers"
+          displayLabel={t("issues.propReviewers", { defaultValue: "Reviewers" })}
           open={reviewersOpen}
           onOpenChange={(open) => { setReviewersOpen(open); if (!open) setReviewerSearch(""); }}
           triggerContent={reviewerTrigger}
@@ -2634,6 +2648,7 @@ export function IssueProperties({
         <PropertyPicker
           inline={inline}
           label="Approvers"
+          displayLabel={t("issues.propApprovers", { defaultValue: "Approvers" })}
           open={approversOpen}
           onOpenChange={(open) => { setApproversOpen(open); if (!open) setApproverSearch(""); }}
           triggerContent={approverTrigger}
@@ -2652,19 +2667,20 @@ export function IssueProperties({
         </>)}
 
         {currentExecutionLabel && (
-          <PropertyRow label="Execution">
+          <PropertyRow label={t("issues.propExecution", { defaultValue: "Execution" })} dataLabel="Execution">
             <span className="text-sm truncate min-w-0" title={currentExecutionLabel}>{currentExecutionLabel}</span>
           </PropertyRow>
         )}
 
         {showScheduledRetryRow && scheduledRetry?.scheduledRetryReason === "workspace_busy" ? (
-          <PropertyRow label="Workspace">
+          <PropertyRow label={t("issues.propWorkspace", { defaultValue: "Workspace" })} dataLabel="Workspace">
             <span className="text-sm text-muted-foreground">Waiting for workspace</span>
           </PropertyRow>
         ) : showScheduledRetryRow && scheduledRetryContent ? (
           <PropertyPicker
             inline={inline}
             label="Scheduled retry"
+            displayLabel={t("issues.propScheduledRetry", { defaultValue: "Scheduled retry" })}
             open={scheduledRetryOpen}
             onOpenChange={setScheduledRetryOpen}
             triggerContent={scheduledRetryTrigger}
@@ -2680,6 +2696,7 @@ export function IssueProperties({
         <PropertyPicker
           inline={inline}
           label="Monitor"
+          displayLabel={t("issues.propMonitor", { defaultValue: "Monitor" })}
           open={monitorOpen}
           onOpenChange={setMonitorOpen}
           triggerContent={monitorTrigger}
@@ -2693,6 +2710,7 @@ export function IssueProperties({
         <PropertyPicker
           inline={inline}
           label="Watchdog"
+          displayLabel={t("issues.propWatchdog", { defaultValue: "Watchdog" })}
           open={watchdogOpen}
           onOpenChange={setWatchdogOpen}
           triggerContent={watchdogTrigger}
@@ -2717,11 +2735,12 @@ export function IssueProperties({
       </PropertySection>
 
       {workspacePickerEligible || hasWorkspaceRuntimeControls || issue.currentExecutionWorkspace?.branchName || issue.currentExecutionWorkspace?.cwd || issue.executionWorkspaceId ? (
-        <PropertySection title="Workspace" streamlined={streamlinedPropertiesEnabled}>
+        <PropertySection title={t("issues.propSectionWorkspace", { defaultValue: "Workspace" })} streamlined={streamlinedPropertiesEnabled}>
           {workspacePickerEligible ? (
             <PropertyPicker
               inline={inline}
               label="Execution"
+              displayLabel={t("issues.propExecution", { defaultValue: "Execution" })}
               open={workspacePickerOpen}
               onOpenChange={(open) => {
                 setWorkspacePickerOpen(open);
@@ -2835,7 +2854,7 @@ export function IssueProperties({
             </PropertyPicker>
           ) : null}
           {showWorkspaceDetailLink && issue.executionWorkspaceId && (
-            <PropertyRow label="Workspace">
+            <PropertyRow label={t("issues.propWorkspace", { defaultValue: "Workspace" })} dataLabel="Workspace">
               <Link
                 to={`/execution-workspaces/${issue.executionWorkspaceId}`}
                 className="text-sm text-primary hover:underline inline-flex min-w-0 items-center gap-1.5"
@@ -2847,7 +2866,7 @@ export function IssueProperties({
             </PropertyRow>
           )}
           {hasWorkspaceRuntimeControls && (
-            <PropertyRow label="Service">
+            <PropertyRow label={t("issues.propService", { defaultValue: "Service" })} dataLabel="Service">
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <WorkspaceRuntimeQuickControls
                   sections={workspaceRuntimeSections}
@@ -2868,7 +2887,7 @@ export function IssueProperties({
             </PropertyRow>
           )}
           {issue.currentExecutionWorkspace?.branchName && (
-            <PropertyRow label="Branch">
+            <PropertyRow label={t("issues.propBranch", { defaultValue: "Branch" })} dataLabel="Branch">
               <TruncatedCopyable
                 value={issue.currentExecutionWorkspace.branchName}
                 icon={GitBranch}
@@ -2876,7 +2895,7 @@ export function IssueProperties({
             </PropertyRow>
           )}
           {issue.currentExecutionWorkspace?.cwd && !hideHostPaths && (
-            <PropertyRow label="Folder">
+            <PropertyRow label={t("issues.propFolder", { defaultValue: "Folder" })} dataLabel="Folder">
               <TruncatedCopyable
                 value={issue.currentExecutionWorkspace.cwd}
                 icon={FolderOpen}
@@ -2886,9 +2905,9 @@ export function IssueProperties({
         </PropertySection>
       ) : null}
 
-      <PropertySection title="About" streamlined={streamlinedPropertiesEnabled}>
+      <PropertySection title={t("issues.propSectionAbout", { defaultValue: "About" })} streamlined={streamlinedPropertiesEnabled}>
         {originatingActor ? (
-          <PropertyRow label="Originating">
+          <PropertyRow label={t("issues.propOriginating", { defaultValue: "Originating" })} dataLabel="Originating">
             {originatingActor.kind === "agent" ? (
               <Link
                 to={`/agents/${originatingActor.id}`}
@@ -2913,7 +2932,7 @@ export function IssueProperties({
           </PropertyRow>
         ) : null}
         {issue.startedAt && (
-          <PropertyRow label="Started">
+          <PropertyRow label={t("issues.propStarted", { defaultValue: "Started" })} dataLabel="Started">
             <span
               className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
               title={streamlinedPropertiesEnabled ? formatDateTime(issue.startedAt) : undefined}
@@ -2921,20 +2940,20 @@ export function IssueProperties({
           </PropertyRow>
         )}
         {issue.completedAt && (
-          <PropertyRow label="Completed">
+          <PropertyRow label={t("issues.propCompleted", { defaultValue: "Completed" })} dataLabel="Completed">
             <span
               className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
               title={streamlinedPropertiesEnabled ? formatDateTime(issue.completedAt) : undefined}
             >{formatDateTime(issue.completedAt)}</span>
           </PropertyRow>
         )}
-        <PropertyRow label="Created">
+        <PropertyRow label={t("issues.propCreated", { defaultValue: "Created" })} dataLabel="Created">
           <span
             className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
             title={streamlinedPropertiesEnabled ? formatDateTime(issue.createdAt) : undefined}
           >{formatDateTime(issue.createdAt)}</span>
         </PropertyRow>
-        <PropertyRow label="Updated">
+        <PropertyRow label={t("issues.propUpdated", { defaultValue: "Updated" })} dataLabel="Updated">
           <span
             className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
             title={streamlinedPropertiesEnabled ? timeAgo(issue.updatedAt) : undefined}
@@ -2945,7 +2964,7 @@ export function IssueProperties({
             const archivedByAgent = (agents ?? []).find((candidate) => candidate.id === issue.archivedByAgentId);
             const archivedByName = agentName(issue.archivedByAgentId);
             return (
-              <PropertyRow label="Archived">
+              <PropertyRow label={t("issues.propArchived", { defaultValue: "Archived" })} dataLabel="Archived">
                 <div className="flex min-w-0 max-w-full flex-col items-start gap-1">
                   {/* The row label already reads "Archived", so the value shows just
                       the attributing agent (icon + name) — this gives the name the
@@ -2987,7 +3006,7 @@ export function IssueProperties({
           })()
         ) : null}
         {issue.requestDepth > 0 && (
-          <PropertyRow label="Depth">
+          <PropertyRow label={t("issues.propDepth", { defaultValue: "Depth" })} dataLabel="Depth">
             <span className="text-sm font-mono">{issue.requestDepth}</span>
           </PropertyRow>
         )}
@@ -3008,18 +3027,18 @@ export function IssueProperties({
   const hasReferencesTab = streamlinedPropertiesEnabled
     && (panelReferencedTasks.length > 0 || panelMentionedInTasks.length > 0);
   const availablePaneTabs: IssuePaneTabDescriptor[] = [
-    { value: "properties", label: "Properties", closable: false },
+    { value: "properties", label: t("issues.properties", { defaultValue: "Properties" }), closable: false },
     ...(hasSubtasksTab
-      ? [{ value: "subtasks" as const, label: "Subtasks", count: childIssues.length, closable: true }]
+      ? [{ value: "subtasks" as const, label: t("issues.paneSubtasks", { defaultValue: "Subtasks" }), count: childIssues.length, closable: true }]
       : []),
     ...(hasReferencesTab
-      ? [{ value: "references" as const, label: "References", closable: true }]
+      ? [{ value: "references" as const, label: t("issues.references", { defaultValue: "References" }), closable: true }]
       : []),
     ...(hasPlanTab
-      ? [{ value: "plans" as const, label: "Plan", closable: true }]
+      ? [{ value: "plans" as const, label: t("issues.plan", { defaultValue: "Plan" }), closable: true }]
       : []),
     ...(hasArtifactsTab
-      ? [{ value: "artifacts" as const, label: "Artifacts", closable: true }]
+      ? [{ value: "artifacts" as const, label: t("issues.artifacts", { defaultValue: "Artifacts" }), closable: true }]
       : []),
   ];
   const visiblePaneTabs = availablePaneTabs.filter(
@@ -3044,11 +3063,11 @@ export function IssueProperties({
                     "inline-flex flex-none items-center bg-muted px-3",
                   )}
                 >
-                  Properties
+                  {t("issues.properties", { defaultValue: "Properties" })}
                 </button>
               </div>,
               paneHeaderSlot,
-            ) : createPortal(<span className="text-sm font-medium">Properties</span>, paneHeaderSlot)
+            ) : createPortal(<span className="text-sm font-medium">{t("issues.properties", { defaultValue: "Properties" })}</span>, paneHeaderSlot)
           : null}
         {propertiesBody}
       </>

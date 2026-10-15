@@ -24,6 +24,7 @@ import { useCombinedInboxTasksEnabled } from "../hooks/useCombinedInboxTasksEnab
 import { useDialogActions } from "../context/DialogContext";
 import { useInboxBadge } from "../hooks/useInboxBadge";
 import { Inbox } from "./Inbox";
+import { useTranslation } from "@/i18n";
 import {
   ORGANIZATION_SCOPED_PARAMS,
   TASK_VIEW_PARAM,
@@ -99,6 +100,7 @@ export function Issues() {
 }
 
 function StreamlinedTasks() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { selectedCompanyId } = useCompany();
@@ -142,13 +144,13 @@ function StreamlinedTasks() {
     return (
       <Inbox
         tab={definition.inboxTab}
-        surfaceLabel="Tasks"
+        surfaceLabel={t("issues.tasks", { defaultValue: "Tasks" })}
         toolbarContext={(
           <div className="flex min-w-0 items-center gap-2">
             {viewsMenu}
-            <Button size="sm" variant="outline" aria-label="New Task" onClick={() => openNewIssue()}>
+            <Button size="sm" variant="outline" aria-label={t("issues.newTask", { defaultValue: "New Task" })} onClick={() => openNewIssue()}>
               <Plus className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">New Task</span>
+              <span className="hidden sm:inline">{t("issues.newTask", { defaultValue: "New Task" })}</span>
             </Button>
           </div>
         )}
@@ -163,6 +165,7 @@ function OrganizationIssues({
   toolbarContext,
   initialStatuses,
 }: { toolbarContext?: ReactNode; initialStatuses?: string[] } = {}) {
+  const { t } = useTranslation();
   const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const issuesPresentation = resolveIssuesPresentation(streamlinedUiEnabled);
   const { selectedCompanyId } = useCompany();
@@ -227,16 +230,16 @@ function OrganizationIssues({
   const issueLinkState = useMemo(
     () =>
       createIssueDetailLocationState(
-        "Tasks",
+        t("issues.tasks", { defaultValue: "Tasks" }),
         `${location.pathname}${location.search}${location.hash}`,
         "issues",
       ),
-    [location.pathname, location.search, location.hash],
+    [location.pathname, location.search, location.hash, t],
   );
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Tasks" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: t("issues.tasks", { defaultValue: "Tasks" }) }]);
+  }, [setBreadcrumbs, t]);
 
   const issuePageSize = workspaceIdFilter ? WORKSPACE_FILTER_ISSUE_LIMIT : ISSUES_PAGE_SIZE;
 
@@ -302,8 +305,8 @@ function OrganizationIssues({
       <EmptyState
         icon={CircleDot}
         message={streamlinedUiEnabled
-          ? "Select an organization to view tasks."
-          : "Select a company to view tasks."}
+          ? t("issues.selectOrg", { defaultValue: "Select an organization to view tasks." })
+          : t("issues.selectCompany", { defaultValue: "Select a company to view tasks." })}
       />
     );
   }
