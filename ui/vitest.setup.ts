@@ -1,4 +1,8 @@
-const storageEntries = new Map<string, string>();
+import "./src/i18n";
+
+const storageEntries = new Map<string, string>([
+  ["paperclip_locale", "en"],
+]);
 
 function installStorageMock(target: Record<string, unknown>) {
   Object.defineProperty(target, "localStorage", {

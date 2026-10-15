@@ -26,6 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import { SidebarServerInfo } from "./SidebarServerInfo";
+import { useTranslation } from "@/i18n";
 
 const INVITES_PATH = "/company/settings/members?tab=invites";
 const DOCS_URL = "https://docs.paperclip.ing/";
@@ -119,6 +120,7 @@ export function SidebarAccountMenu({
   onOpenChange,
   forceExpanded = false,
 }: SidebarAccountMenuProps) {
+  const { t, i18n } = useTranslation();
   const cloud = useCloudInstance();
   const isCloud = Boolean(cloud);
   // Invites live on the Members page (or in Cloud's People settings). Hide the
@@ -230,14 +232,14 @@ export function SidebarAccountMenu({
 
             <div className="flex flex-1 flex-col gap-0.5 border-t border-border px-2.5 pb-2.5 pt-2">
               <MenuAction
-                label="Settings"
+                label={t("sidebar.settings", { defaultValue: "Settings" })}
                 icon={Settings}
                 href="/company/settings"
                 onClick={closeNavigationChrome}
               />
               {showInvite && inviteHref ? (
                 <MenuAction
-                  label="Invite"
+                  label={t("sidebar.invite", { defaultValue: "Invite" })}
                   icon={UserPlus}
                   href={inviteHref}
                   topLevel={isCloud}
@@ -245,12 +247,33 @@ export function SidebarAccountMenu({
                 />
               ) : null}
               <MenuAction
-                label="Documentation"
+                label={t("sidebar.documentation", { defaultValue: "Documentation" })}
                 icon={BookOpen}
                 href={DOCS_URL}
                 external
                 onClick={() => setOpen(false)}
               />
+              <button
+                type="button"
+                onClick={() => {
+                  const nextLang = i18n.language === "pt-BR" ? "en" : "pt-BR";
+                  if (typeof window !== "undefined" && window.localStorage) {
+                    window.localStorage.setItem("paperclip_locale", nextLang);
+                  }
+                  void i18n.changeLanguage(nextLang);
+                }}
+                className="flex h-(--profile-popover-row-height) w-full items-center gap-(--profile-popover-row-gap) rounded-lg px-2.5 text-left text-(length:--text-compact) font-medium leading-(--profile-popover-label-line-height) text-foreground transition-colors hover:bg-accent"
+              >
+                <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground text-xs font-bold">
+                  🌐
+                </span>
+                <span className="min-w-0 flex-1 truncate">
+                  {i18n.language === "pt-BR" ? "Idioma: Português" : "Language: English"}
+                </span>
+                <span className="text-xs text-muted-foreground uppercase font-mono px-1.5 py-0.5 rounded bg-muted">
+                  {i18n.language === "pt-BR" ? "PT" : "EN"}
+                </span>
+              </button>
               <ThemeToggle variant="compact-menu-action" onAfterToggle={() => setOpen(false)} />
               {deploymentMode === "authenticated" ? (
                 <button
@@ -266,7 +289,7 @@ export function SidebarAccountMenu({
                     <LogOut className="size-4" />
                   </span>
                   <span className="min-w-0 flex-1 truncate">
-                    {signOutMutation.isPending ? "Signing out..." : "Sign out"}
+                    {signOutMutation.isPending ? "Saindo..." : "Sair"}
                   </span>
                 </button>
               ) : null}

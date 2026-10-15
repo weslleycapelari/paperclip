@@ -56,12 +56,15 @@ export function serviceWorkerBuildIdPlugin(
   const serviceWorkerFileName = options.serviceWorkerFileName ?? "sw.js";
   let buildId: string | null = null;
   let outDir = "dist";
+  let publicDir = "public";
 
   return {
     name: "paperclip-sw-build-id",
     apply: "build",
+    enforce: "post",
     configResolved(config) {
       outDir = config.build.outDir;
+      publicDir = config.publicDir;
     },
     generateBundle(_options, bundle) {
       const entry = Object.values(bundle).find(
@@ -71,11 +74,26 @@ export function serviceWorkerBuildIdPlugin(
         buildId = deriveBuildIdFromEntryFileName(entry.fileName);
       }
     },
-    closeBundle() {
-      const swPath = path.resolve(outDir, serviceWorkerFileName);
-      const source = fs.readFileSync(swPath, "utf8");
-      const stamped = stampServiceWorkerBuildId(source, buildId ?? "build");
-      fs.writeFileSync(swPath, stamped);
+    closeBundle: {
+      order: "post",
+      handler() {
+        const swDistPath = path.resolve(outDir, serviceWorkerFileName);
+        const swPublicPath = path.resolve(publicDir, serviceWorkerFileName);
+        let source = "";
+        if (fs.existsSync(swPublicPath)) {
+          source = fs.readFileSync(swPublicPath, "utf8");
+        } else if (fs.existsSync(swDistPath)) {
+          source = fs.readFileSync(swDistPath, "utf8");
+        }
+        if (!source) {
+          throw new Error(`Could not find service worker source at ${swPublicPath} or ${swDistPath}`);
+        }
+        const stamped = stampServiceWorkerBuildId(source, buildId ?? "build");
+        if (!fs.existsSync(outDir)) {
+          fs.mkdirSync(outDir, { recursive: true });
+        }
+        fs.writeFileSync(swDistPath, stamped);
+      },
     },
   };
 }
