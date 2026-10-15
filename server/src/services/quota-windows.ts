@@ -19,7 +19,11 @@ export async function fetchCompanyQuotaWindows(db: Db, companyId: string, userId
   const service = aiConnectionService(db);
   const accounts = await service.quotaAccounts(companyId, userId);
   if (!accounts.length) {
-    return ["anthropic", "openai"].map(provider => ({ provider, ok: false,
+    const local = await fetchAllQuotaWindows();
+    if (local.length > 0 && local.some((l) => l.ok)) {
+      return local;
+    }
+    return ["anthropic", "openai", "antigravity"].map(provider => ({ provider, ok: false,
       accountKey: `unconnected:${companyId}:${provider}`, source: "managed-connection",
       errorFamily: "credentials_unavailable", error: "Connect a subscription account in AI connections to view its quota.", windows: [] }));
   }
@@ -142,6 +146,8 @@ function providerSlugForAdapterType(type: string): string {
       return "anthropic";
     case "codex_local":
       return "openai";
+    case "antigravity_local":
+      return "antigravity";
     default:
       return type;
   }

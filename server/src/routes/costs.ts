@@ -33,6 +33,7 @@ import {
 } from "../services/index.js";
 import { assertBoard, assertCompanyAccess, getAccessibleResource, getActorInfo } from "./authz.js";
 import { fetchCompanyQuotaWindows } from "../services/quota-windows.js";
+import { getSubscriptionPoolStatus, saveSubscriptionPoolConfig } from "../services/subscription-pool.js";
 import { badRequest, forbidden } from "../errors.js";
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
 
@@ -341,6 +342,20 @@ export function costRoutes(
     }
     const results = await fetchCompanyQuotaWindows(db, companyId, getActorInfo(req).actorId);
     res.json(results);
+  });
+
+  router.get("/companies/:companyId/subscription-pool", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    const status = await getSubscriptionPoolStatus(companyId);
+    res.json(status);
+  });
+
+  router.post("/companies/:companyId/subscription-pool", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    const updated = await saveSubscriptionPoolConfig(companyId, req.body);
+    res.json(updated);
   });
 
   router.get("/companies/:companyId/budgets/overview", async (req, res) => {
