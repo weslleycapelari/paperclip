@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { History } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "@/lib/router";
 import { useCompany } from "../../context/CompanyContext";
 import { useBreadcrumbs } from "../../context/BreadcrumbContext";
@@ -15,6 +16,7 @@ import { AuditHub } from "./AuditHub";
  * links can preset it and links stay shareable. The server enforces both tiers.
  */
 export function CompanyActivity() {
+  const { t } = useTranslation();
   const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -34,8 +36,8 @@ export function CompanyActivity() {
   ].includes(actionParam ?? "") ? actionParam! : "__all";
 
   useEffect(() => {
-    if (!streamlinedUiEnabled) setBreadcrumbs([{ label: "Activity" }]);
-  }, [setBreadcrumbs, streamlinedUiEnabled]);
+    if (!streamlinedUiEnabled) setBreadcrumbs([{ label: t("audit.sections.activity", "Activity") }]);
+  }, [setBreadcrumbs, streamlinedUiEnabled, t]);
 
   const handleModeChange = useCallback(
     (next: AuditFeedMode) => {
@@ -67,7 +69,12 @@ export function CompanyActivity() {
   if (streamlinedUiEnabled) return <AuditHub section="activity" />;
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={History} message="Select an organization to view activity." />;
+    return (
+      <EmptyState
+        icon={History}
+        message={t("audit.emptyActivityOrg", "Select an organization to view activity.")}
+      />
+    );
   }
 
   return (

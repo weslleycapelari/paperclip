@@ -38,6 +38,7 @@ import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { useCompanyOrder } from "@/hooks/useCompanyOrder";
 import { useSignOut } from "@/hooks/useSignOut";
 import { queryKeys } from "@/lib/queryKeys";
+import { useTranslation } from "react-i18next";
 import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "@/lib/utils";
 import { useSidebar } from "../context/SidebarContext";
 import { CompanyPatternIcon } from "./CompanyPatternIcon";
@@ -153,6 +154,7 @@ export function SidebarCompanyMenu(props: SidebarCompanyMenuProps = {}) {
 }
 
 function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompanyMenuProps) {
+  const { t } = useTranslation();
   const [internalOpen, setInternalOpen] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const { companies, selectedCompany, setSelectedCompanyId, companyListUnavailable, retryCompanies } =
@@ -268,8 +270,14 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
           className="h-9 min-w-0 flex-1 justify-start gap-2 px-4 text-left hover:bg-sidebar-accent hover:text-sidebar-accent-foreground has-[>svg]:px-4 dark:hover:bg-sidebar-accent dark:hover:text-sidebar-accent-foreground"
           aria-label={
             currentName
-              ? `Open ${currentName} ${switcherNoun} switcher`
-              : `Open ${switcherNoun} switcher`
+              ? t(
+                  "sidebar.companyMenu.openSwitcher",
+                  `Open ${currentName} ${switcherNoun} switcher`,
+                  { name: currentName, noun: switcherNoun }
+                )
+              : t("sidebar.companyMenu.openSwitcherDefault", `Open ${switcherNoun} switcher`, {
+                  noun: switcherNoun,
+                })
           }
         >
           <span className="flex min-w-0 flex-1 items-center gap-2">
@@ -285,7 +293,10 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
               )}
               title={currentName ?? undefined}
             >
-              {currentName ?? `Select ${switcherNoun}`}
+              {currentName ??
+                t("sidebar.companyMenu.selectSwitcher", `Select ${switcherNoun}`, {
+                  noun: switcherNoun,
+                })}
             </span>
           </span>
           {!rail && <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />}
@@ -298,7 +309,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
       >
         <div className="flex h-(--organization-popover-header-height) items-center justify-between gap-2 px-3.5">
           <DropdownMenuLabel className="p-0 text-(length:--text-compact) font-semibold text-foreground">
-            Organizations
+            {t("sidebar.companyMenu.organizations", "Organizations")}
           </DropdownMenuLabel>
           <button
             type="button"
@@ -309,7 +320,9 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
             }}
             className="rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            {isEditingOrder ? "Done" : "Edit"}
+            {isEditingOrder
+              ? t("sidebar.companyMenu.done", "Done")
+              : t("sidebar.companyMenu.edit", "Edit")}
           </button>
         </div>
         <div className="flex max-h-96 flex-col gap-0.5 overflow-y-auto px-2.5 pb-2 pt-1">
@@ -340,7 +353,9 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
             // offer the way back.
             companyListUnavailable ? (
               <>
-                <DropdownMenuItem disabled>Couldn&apos;t load organizations</DropdownMenuItem>
+                <DropdownMenuItem disabled>
+                  {t("sidebar.companyMenu.couldNotLoad", "Couldn't load organizations")}
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={(event) => {
                     // Keep the menu open so the result of the retry is visible.
@@ -349,11 +364,13 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
                   }}
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Try again
+                  {t("sidebar.companyMenu.tryAgain", "Try again")}
                 </DropdownMenuItem>
               </>
             ) : (
-              <DropdownMenuItem disabled>No organizations</DropdownMenuItem>
+              <DropdownMenuItem disabled>
+                {t("sidebar.companyMenu.noOrganizations", "No organizations")}
+              </DropdownMenuItem>
             )
           ) : null}
         </div>
@@ -367,7 +384,9 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
               <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
                 <Plus className="size-4" />
               </span>
-              <span className="min-w-0 flex-1 truncate">Create organization</span>
+              <span className="min-w-0 flex-1 truncate">
+                {t("sidebar.companyMenu.createOrganization", "Create organization")}
+              </span>
             </DropdownMenuItem>
           )}
           {showInvitePeople ? (
@@ -386,7 +405,11 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
                   <UserPlus className="size-4" />
                 </span>
                 <span className="min-w-0 flex-1 truncate">
-                  {currentName ? `Invite people to ${currentName}` : "Invite people"}
+                  {currentName
+                    ? t("sidebar.companyMenu.invitePeopleTo", `Invite people to ${currentName}`, {
+                        name: currentName,
+                      })
+                    : t("sidebar.companyMenu.invitePeople", "Invite people")}
                 </span>
               </Link>
             </DropdownMenuItem>
@@ -401,7 +424,9 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
                 <LogOut className="size-4" />
               </span>
               <span className="min-w-0 flex-1 truncate">
-                {signOutMutation.isPending ? "Signing out..." : "Sign out"}
+                {signOutMutation.isPending
+                  ? t("sidebar.companyMenu.signingOut", "Signing out...")
+                  : t("sidebar.companyMenu.signOut", "Sign out")}
               </span>
             </DropdownMenuItem>
           ) : null}

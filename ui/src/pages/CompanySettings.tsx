@@ -31,6 +31,7 @@ import {
 import { InstanceGeneralSettings } from "./InstanceGeneralSettings";
 import { DecisionModelSettingsSection } from "../components/decision-models/DecisionModelSettings";
 import { useFastResponsesEnabled } from "../hooks/useFastResponsesEnabled";
+import { useTranslation } from "@/i18n";
 
 export function CompanySettings() {
   const {
@@ -45,6 +46,7 @@ export function CompanySettings() {
   const toastActions = useOptionalToastActions();
   const cloud = useCloudInstance();
   const fastResponses = useFastResponsesEnabled();
+  const { t } = useTranslation();
   // Managed instances derive the task ID prefix from the company name, so a
   // rename here also renumbers the existing task IDs.
   const isCloudManaged = Boolean(cloud);
@@ -168,8 +170,8 @@ export function CompanySettings() {
       }
       if (departure.kind === "company") {
         toastActions?.pushToast({
-          title: `${archivedName} is archived`,
-          body: `Switched to ${departure.company.name}.`,
+          title: t("settings.company.archivedToastTitle", "{{name}} is archived", { name: archivedName }),
+          body: t("settings.company.switchedToCompany", "Switched to {{name}}.", { name: departure.company.name }),
           tone: "info",
           dedupeKey: `company-archive-departure:${companyId}`,
         });
@@ -177,8 +179,8 @@ export function CompanySettings() {
         navigate(`/${departure.company.issuePrefix}/dashboard`, { replace: true });
       } else {
         toastActions?.pushToast({
-          title: `${archivedName} is archived`,
-          body: "You can unarchive it from this list.",
+          title: t("settings.company.archivedToastTitle", "{{name}} is archived", { name: archivedName }),
+          body: t("settings.company.unarchiveFromList", "You can unarchive it from this list."),
           tone: "info",
           dedupeKey: `company-archive-departure:${companyId}`,
         });
@@ -195,15 +197,15 @@ export function CompanySettings() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
-      { label: "Settings" }
+      { label: selectedCompany?.name ?? t("common.company", "Company"), href: "/dashboard" },
+      { label: t("settings.title", "Settings") }
     ]);
-  }, [setBreadcrumbs, selectedCompany?.name]);
+  }, [setBreadcrumbs, selectedCompany?.name, t]);
 
   if (!selectedCompany) {
     return (
       <div className="text-sm text-muted-foreground">
-        No organization selected. Select an organization from the switcher above.
+        {t("settings.company.noOrgSelected", "No organization selected. Select an organization from the switcher above.")}
       </div>
     );
   }
@@ -219,16 +221,19 @@ export function CompanySettings() {
     <div className="max-w-6xl space-y-8">
       <div className="flex items-center gap-2">
         <SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
-        <h1 className="text-lg font-semibold">General</h1>
+        <h1 className="text-lg font-semibold">{t("settings.company.title", "General")}</h1>
       </div>
 
       {/* General */}
       <div className="max-w-2xl space-y-4">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          General
+          {t("settings.company.title", "General")}
         </div>
         <div className="space-y-3">
-          <Field label="Organization name" hint="The display name for your organization.">
+          <Field
+            label={t("settings.company.orgName", "Organization name")}
+            hint={t("settings.company.orgNameHint", "The display name for your organization.")}
+          >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
@@ -237,20 +242,22 @@ export function CompanySettings() {
             />
             {isCloudManaged && (
               <p className="mt-1 text-xs text-muted-foreground">
-                Renaming can change this company's task ID prefix. Existing task IDs are
-                renumbered and old task links stop resolving.
+                {t(
+                  "settings.company.renameWarning",
+                  "Renaming can change this company's task ID prefix. Existing task IDs are renumbered and old task links stop resolving."
+                )}
               </p>
             )}
           </Field>
           <Field
-            label="Description"
-            hint="Optional description shown in the organization profile."
+            label={t("settings.company.description", "Description")}
+            hint={t("settings.company.descriptionHint", "Optional description shown in the organization profile.")}
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
               value={description}
-              placeholder="Optional organization description"
+              placeholder={t("settings.company.descriptionPlaceholder", "Optional organization description")}
               onChange={(e) => setDescription(e.target.value)}
             />
           </Field>
@@ -260,7 +267,7 @@ export function CompanySettings() {
       {/* Appearance */}
       <div className="max-w-2xl space-y-4">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Appearance
+          {t("settings.company.appearance", "Appearance")}
         </div>
         <div className="space-y-3">
           <div className="flex items-start gap-4">
@@ -273,8 +280,8 @@ export function CompanySettings() {
             </div>
             <div className="flex-1 space-y-3">
               <Field
-                label="Logo"
-                hint="Upload a PNG, JPEG, WEBP, GIF, or SVG logo image."
+                label={t("settings.company.logo", "Logo")}
+                hint={t("settings.company.logoHint", "Upload a PNG, JPEG, WEBP, GIF, or SVG logo image.")}
               >
                 <div className="space-y-2">
                   <input
@@ -291,7 +298,9 @@ export function CompanySettings() {
                         onClick={handleClearLogo}
                         disabled={clearLogoMutation.isPending}
                       >
-                        {clearLogoMutation.isPending ? "Removing..." : "Remove logo"}
+                        {clearLogoMutation.isPending
+                          ? t("settings.company.removingLogo", "Removing...")
+                          : t("settings.company.removeLogo", "Remove logo")}
                       </Button>
                     </div>
                   )}
@@ -300,7 +309,7 @@ export function CompanySettings() {
                       {logoUploadError ??
                         (logoUploadMutation.error instanceof Error
                           ? logoUploadMutation.error.message
-                          : "Logo upload failed")}
+                          : t("settings.company.logoUploadFailed", "Logo upload failed"))}
                     </span>
                   )}
                   {clearLogoMutation.isError && (
@@ -309,7 +318,9 @@ export function CompanySettings() {
                     </span>
                   )}
                   {logoUploadMutation.isPending && (
-                    <span className="text-xs text-muted-foreground">Uploading logo...</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t("settings.company.uploadingLogo", "Uploading logo...")}
+                    </span>
                   )}
                 </div>
               </Field>
@@ -326,16 +337,18 @@ export function CompanySettings() {
             onClick={handleSaveGeneral}
             disabled={generalMutation.isPending || !companyName.trim()}
           >
-            {generalMutation.isPending ? "Saving..." : "Save changes"}
+            {generalMutation.isPending
+              ? t("settings.company.saving", "Saving...")
+              : t("settings.company.saveChanges", "Save changes")}
           </Button>
           {generalMutation.isSuccess && (
-            <span className="text-xs text-muted-foreground">Saved</span>
+            <span className="text-xs text-muted-foreground">{t("settings.company.saved", "Saved")}</span>
           )}
           {generalMutation.isError && (
             <span className="text-xs text-destructive">
               {generalMutation.error instanceof Error
-                  ? generalMutation.error.message
-                  : "Failed to save"}
+                ? generalMutation.error.message
+                : t("settings.company.saveFailed", "Failed to save")}
             </span>
           )}
         </div>
@@ -344,12 +357,12 @@ export function CompanySettings() {
       {/* Hiring */}
       <div className="max-w-2xl space-y-4" data-testid="company-settings-team-section">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Hiring
+          {t("settings.company.hiring", "Hiring")}
         </div>
         <div>
           <ToggleField
-            label="Require board approval for new hires"
-            hint="New agent hires stay pending until approved by board."
+            label={t("settings.company.requireBoardApproval", "Require board approval for new hires")}
+            hint={t("settings.company.requireBoardApprovalHint", "New agent hires stay pending until approved by board.")}
             checked={!!selectedCompany.requireBoardApprovalForNewAgents}
             onChange={(v) => settingsMutation.mutate(v)}
             toggleTestId="company-settings-team-approval-toggle"
@@ -366,7 +379,7 @@ export function CompanySettings() {
           governanceMutation.isError
             ? governanceMutation.error instanceof Error
               ? governanceMutation.error.message
-              : "Failed to save interaction governance"
+              : t("settings.company.governanceSaveFailed", "Failed to save interaction governance")
             : null
         }
       />
@@ -380,12 +393,14 @@ export function CompanySettings() {
       {/* Danger Zone */}
       <div className="space-y-4">
         <div className="text-xs font-medium text-destructive uppercase tracking-wide">
-          Danger Zone
+          {t("settings.company.dangerZone", "Danger Zone")}
         </div>
         <div className="space-y-3 bg-destructive/5 px-4 py-4">
           <p className="text-sm text-muted-foreground">
-            Archive this organization to hide it from the sidebar. This persists in
-            the database.
+            {t(
+              "settings.company.archiveNotice",
+              "Archive this organization to hide it from the sidebar. This persists in the database."
+            )}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -398,23 +413,27 @@ export function CompanySettings() {
               onClick={() => {
                 if (!selectedCompanyId) return;
                 const confirmed = window.confirm(
-                  `Archive organization "${selectedCompany.name}"? It will be hidden from the sidebar.`
+                  t(
+                    "settings.company.archiveConfirm",
+                    `Archive organization "${selectedCompany.name}"? It will be hidden from the sidebar.`,
+                    { name: selectedCompany.name }
+                  )
                 );
                 if (!confirmed) return;
                 archiveMutation.mutate({ companyId: selectedCompanyId });
               }}
             >
               {archiveMutation.isPending
-                ? "Archiving..."
+                ? t("settings.company.archiving", "Archiving...")
                 : selectedCompany.status === "archived"
-                ? "Already archived"
-                : "Archive organization"}
+                ? t("settings.company.alreadyArchived", "Already archived")
+                : t("settings.company.archiveOrg", "Archive organization")}
             </Button>
             {archiveMutation.isError && (
               <span className="text-xs text-destructive">
                 {archiveMutation.error instanceof Error
                   ? archiveMutation.error.message
-                  : "Failed to archive organization"}
+                  : t("settings.company.archiveFailed", "Failed to archive organization")}
               </span>
             )}
           </div>

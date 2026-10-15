@@ -30,6 +30,7 @@ import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { useFastResponsesEnabled } from "@/hooks/useFastResponsesEnabled";
 import { usePluginSlots } from "@/plugins/slots";
+import { useTranslation } from "react-i18next";
 import { SidebarNavItem } from "./SidebarNavItem.production";
 
 /**
@@ -45,6 +46,7 @@ function isSandboxProviderOnly(plugin: PluginRecord): boolean {
 }
 
 export function CompanySettingsSidebar() {
+  const { t } = useTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { isMobile, setSidebarOpen } = useSidebar();
   const { hidden: hiddenSettings } = useHiddenSettings();
@@ -97,17 +99,22 @@ export function CompanySettingsSidebar() {
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{selectedCompany?.name ?? "Company"}</span>
+          <span className="truncate">{selectedCompany?.name ?? t("common.company", "Company")}</span>
         </Link>
       </div>
 
       <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide px-3 py-2">
         <div className="flex flex-col gap-0.5">
-          <SidebarNavItem to="/company/settings" label="General" icon={SlidersHorizontal} end />
+          <SidebarNavItem
+            to="/company/settings"
+            label={t("sidebar.settingsNav.general", "General")}
+            icon={SlidersHorizontal}
+            end
+          />
           {showPage("instance.profile") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/profile`}
-              label="Profile"
+              label={t("sidebar.settingsNav.profile", "Profile")}
               icon={UserRoundPen}
               end
             />
@@ -115,7 +122,7 @@ export function CompanySettingsSidebar() {
           {showPage("company.members") && (
             <SidebarNavItem
               to="/company/settings/members"
-              label="Members"
+              label={t("sidebar.settingsNav.members", "Members")}
               icon={Users}
               badge={badges?.joinRequests ?? 0}
               end
@@ -133,26 +140,41 @@ export function CompanySettingsSidebar() {
               />
             ))}
           {showPage("company.invites") && (
-            <SidebarNavItem to="/company/settings/invites" label="Invites" icon={MailPlus} end />
+            <SidebarNavItem
+              to="/company/settings/invites"
+              label={t("sidebar.settingsNav.invites", "Invites")}
+              icon={MailPlus}
+              end
+            />
           )}
           {showPage("company.secrets") && (
-            <SidebarNavItem to="/company/settings/secrets" label="Secrets" icon={KeyRound} end />
+            <SidebarNavItem
+              to="/company/settings/secrets"
+              label={t("sidebar.settingsNav.secrets", "Secrets")}
+              icon={KeyRound}
+              end
+            />
           )}
           {showPage("instance.environments") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/environments`}
-              label="Environments"
+              label={t("sidebar.settingsNav.environments", "Environments")}
               icon={MonitorCog}
               end
             />
           )}
           {fastResponsesEnabled && (
-            <SidebarNavItem to="/company/settings/connections" label="Connections" icon={Link2} end />
+            <SidebarNavItem
+              to="/company/settings/connections"
+              label={t("sidebar.settingsNav.connections", "Connections")}
+              icon={Link2}
+              end
+            />
           )}
           {showPage("instance.access") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/access`}
-              label="Access"
+              label={t("sidebar.settingsNav.access", "Access")}
               icon={Shield}
               end
             />
@@ -160,28 +182,37 @@ export function CompanySettingsSidebar() {
           {showPage("instance.heartbeats") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/heartbeats`}
-              label="Heartbeats"
+              label={t("sidebar.settingsNav.heartbeats", "Heartbeats")}
               icon={Clock3}
               end
             />
           )}
           {showPage("company.export") && (
-            <SidebarNavItem to="/company/export" label="Export" icon={Download} />
+            <SidebarNavItem
+              to="/company/export"
+              label={t("sidebar.settingsNav.export", "Export")}
+              icon={Download}
+            />
           )}
           {!isCloud && showPage("company.import") && (
-            <SidebarNavItem to="/company/import" label="Import" icon={Upload} end />
+            <SidebarNavItem
+              to="/company/import"
+              label={t("sidebar.settingsNav.import", "Import")}
+              icon={Upload}
+              end
+            />
           )}
           {showPage("instance.experimental") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/experimental`}
-              label="Experimental"
+              label={t("sidebar.settingsNav.experimental", "Experimental")}
               icon={FlaskConical}
             />
           )}
           {showPlugins && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/plugins`}
-              label="Plugins"
+              label={t("sidebar.settingsNav.plugins", "Plugins")}
               icon={Puzzle}
             />
           )}
@@ -209,7 +240,7 @@ export function CompanySettingsSidebar() {
           {showPage("instance.adapters") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/adapters`}
-              label="Adapters"
+              label={t("sidebar.settingsNav.adapters", "Adapters")}
               icon={Cpu}
             />
           )}

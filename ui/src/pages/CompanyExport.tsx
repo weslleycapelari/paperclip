@@ -12,6 +12,7 @@ import { useNavigate, useLocation } from "@/lib/router";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
+import { useTranslation } from "react-i18next";
 import { agentsApi } from "../api/agents";
 import { authApi } from "../api/auth";
 import { companiesApi } from "../api/companies";
@@ -537,9 +538,13 @@ function ExportPreviewPane({
   orgChartPreviewUrl?: string;
   onSkillClick?: (skill: string) => void;
 }) {
+  const { t } = useTranslation();
   if (!selectedFile || content === null) {
     return (
-      <EmptyState icon={Package} message="Select a file to preview its contents." />
+      <EmptyState
+        icon={Package}
+        message={t("settings.export.selectFilePreview", "Select a file to preview its contents.")}
+      />
     );
   }
 
@@ -626,6 +631,7 @@ function previewErrorMessage(error: unknown): string {
 }
 
 export function CompanyExport() {
+  const { t } = useTranslation();
   const { selectedCompanyId, selectedCompany } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
@@ -733,11 +739,11 @@ export function CompanyExport() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Organization", href: "/dashboard" },
-      { label: "Settings", href: "/company/settings" },
-      { label: "Export" },
+      { label: selectedCompany?.name ?? t("common.organization", "Organization"), href: "/dashboard" },
+      { label: t("settings.title", "Settings"), href: "/company/settings" },
+      { label: t("sidebar.settingsNav.export", "Export") },
     ]);
-  }, [selectedCompany?.name, setBreadcrumbs]);
+  }, [selectedCompany?.name, setBreadcrumbs, t]);
 
   const exportPreviewMutation = useMutation({
     mutationFn: ({ includeIssues: withIssues, includeSkills, signal }: ExportPreviewMutationInput) =>
@@ -1048,10 +1054,13 @@ export function CompanyExport() {
     return (
       <EmptyState
         icon={Package}
-        title="Export preview failed"
+        title={t("settings.export.previewFailedTitle", "Export preview failed")}
         message={previewErrorMessage(exportPreviewMutation.error)}
-        description="Retry the preview. You do not need to reload this page."
-        action="Retry preview"
+        description={t(
+          "settings.export.previewFailedDesc",
+          "Retry the preview. You do not need to reload this page."
+        )}
+        action={t("settings.export.retryPreview", "Retry preview")}
         onAction={startPreviewRequest}
         hideActionIcon
       />
@@ -1062,9 +1071,9 @@ export function CompanyExport() {
     return (
       <EmptyState
         icon={Package}
-        title="Export preview unavailable"
-        message="No export preview is loaded."
-        action="Load preview"
+        title={t("settings.export.previewUnavailableTitle", "Export preview unavailable")}
+        message={t("settings.export.previewUnavailableMessage", "No export preview is loaded.")}
+        action={t("settings.export.loadPreview", "Load preview")}
         onAction={startPreviewRequest}
         hideActionIcon
       />
@@ -1084,15 +1093,35 @@ export function CompanyExport() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span className="font-medium">
-              {selectedCompany?.name ?? "Organization"} export
+              {t(
+                "settings.export.exportTitle",
+                `${selectedCompany?.name ?? "Organization"} export`,
+                {
+                  name: selectedCompany?.name ?? t("common.organization", "Organization"),
+                }
+              )}
             </span>
             <span className="text-muted-foreground">
-              Exporting {selectedCount.toLocaleString()} of {totalFiles.toLocaleString()} file{totalFiles === 1 ? "" : "s"}
+              {t(
+                "settings.export.exportingSummary",
+                `Exporting ${selectedCount.toLocaleString()} of ${totalFiles.toLocaleString()} ${totalFiles === 1 ? "file" : "files"}`,
+                {
+                  selected: selectedCount.toLocaleString(),
+                  total: totalFiles.toLocaleString(),
+                  files:
+                    totalFiles === 1
+                      ? t("settings.export.files_one", "file")
+                      : t("settings.export.files_other", "files"),
+                }
+              )}
               {selectedCount > 0 && ` (~${formatBytes(estimatedZipBytes)})`}
             </span>
             {warnings.length > 0 && (
               <span className="text-amber-500">
-                {warnings.length} warning{warnings.length === 1 ? "" : "s"}
+                {warnings.length}{" "}
+                {warnings.length === 1
+                  ? t("settings.export.warnings_one", "warning")
+                  : t("settings.export.warnings_other", "warnings")}
               </span>
             )}
           </div>
@@ -1109,8 +1138,18 @@ export function CompanyExport() {
           >
             <Download className="mr-1.5 h-3.5 w-3.5" />
             {downloadMutation.isPending
-              ? "Building export..."
-              : `Export ${selectedCount.toLocaleString()} file${selectedCount === 1 ? "" : "s"}`}
+              ? t("settings.export.buildingExport", "Building export...")
+              : t(
+                  "settings.export.exportButton",
+                  `Export ${selectedCount.toLocaleString()} ${selectedCount === 1 ? "file" : "files"}`,
+                  {
+                    count: selectedCount,
+                    files:
+                      selectedCount === 1
+                        ? t("settings.export.files_one", "file")
+                        : t("settings.export.files_other", "files"),
+                  }
+                )}
           </Button>
         </div>
       </div>
@@ -1127,7 +1166,9 @@ export function CompanyExport() {
       {/* Export fidelity: data the bundle will not carry */}
       {fidelityReport && fidelityReport.warnings.length > 0 && (
         <div className="mx-5 mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-          <h3 className="mb-1.5 text-xs font-medium">Not included in this export</h3>
+          <h3 className="mb-1.5 text-xs font-medium">
+            {t("settings.export.notIncluded", "Not included in this export")}
+          </h3>
           {fidelityReport.warnings.map((warning) => (
             <div
               key={warning.code}
@@ -1146,7 +1187,9 @@ export function CompanyExport() {
       <div className="grid gap-4 xl:h-(--sz-calc-30) xl:grid-cols-(--gtc-25) xl:gap-0">
         <aside className="flex max-h-(--sz-24rem) flex-col overflow-hidden border-b border-border xl:max-h-none xl:border-b-0 xl:border-r">
           <div className="border-b border-border px-4 py-3 shrink-0">
-            <h2 className="text-base font-semibold">Package files</h2>
+            <h2 className="text-base font-semibold">
+              {t("settings.export.packageFiles", "Package files")}
+            </h2>
           </div>
           <div className="border-b border-border px-4 py-3 shrink-0">
             <h3 className="mb-2 text-xs font-medium text-muted-foreground">What to include</h3>
