@@ -1,4 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { deriveOriginatingActor, INBOX_MINE_ISSUE_STATUS_FILTER, isHeartbeatRunVisibleInMine } from "@paperclipai/shared";
@@ -381,6 +382,7 @@ export function FailedRunInboxRow({
   selected?: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const issueId = readIssueIdFromRun(run);
   const issue = issueId ? issueById.get(issueId) ?? null : null;
   const displayError = runFailureMessage(run);
@@ -403,7 +405,7 @@ export function FailedRunInboxRow({
                   "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
                   "hover:bg-blue-500/20",
                 )}
-                aria-label="Mark as read"
+                aria-label={t("inbox.actions.markAsRead", "Mark as read")}
               >
                 <span className={cn(
                   "block h-2 w-2 rounded-full transition-opacity duration-300",
@@ -438,7 +440,7 @@ export function FailedRunInboxRow({
                   {issue.title}
                 </>
               ) : (
-                <>Failed run{linkedAgentName ? ` — ${linkedAgentName}` : ""}</>
+                <>{linkedAgentName ? t("inbox.actions.failedRunBy", "Failed run — {{agentName}}", { agentName: linkedAgentName }) : t("inbox.actions.failedRun", "Failed run")}</>
               )}
             </span>
             <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
@@ -462,14 +464,14 @@ export function FailedRunInboxRow({
             disabled={isRetrying}
           >
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-            {isRetrying ? "Retrying…" : "Retry"}
+            {isRetrying ? t("inbox.actions.retrying", "Retrying…") : t("inbox.actions.retry", "Retry")}
           </Button>
           {!showUnreadSlot && (
             <button
               type="button"
               onClick={onDismiss}
               className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
-              aria-label="Dismiss"
+              aria-label={t("inbox.alerts.dismiss", "Dismiss")}
             >
               <X className="h-4 w-4" />
             </button>
@@ -486,14 +488,14 @@ export function FailedRunInboxRow({
           disabled={isRetrying}
         >
           <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-          {isRetrying ? "Retrying…" : "Retry"}
+          {isRetrying ? t("inbox.actions.retrying", "Retrying…") : t("inbox.actions.retry", "Retry")}
         </Button>
         {!showUnreadSlot && (
           <button
             type="button"
             onClick={onDismiss}
             className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label="Dismiss"
+            aria-label={t("inbox.alerts.dismiss", "Dismiss")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -528,6 +530,7 @@ function ApprovalInboxRow({
   selected?: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const Icon = typeIcon[approval.type] ?? defaultTypeIcon;
   const label = approvalLabel(approval.type, approval.payload as Record<string, unknown> | null);
   const showResolutionButtons =
@@ -552,7 +555,7 @@ function ApprovalInboxRow({
                   "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
                   "hover:bg-blue-500/20",
                 )}
-                aria-label="Mark as read"
+                aria-label={t("inbox.actions.markAsRead", "Mark as read")}
               >
                 <span className={cn(
                   "block h-2 w-2 rounded-full transition-opacity duration-300",
@@ -583,8 +586,8 @@ function ApprovalInboxRow({
             </span>
             <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
               <span className="capitalize">{approvalStatusLabel(approval.status)}</span>
-              {requesterName ? <span>requested by {requesterName}</span> : null}
-              <span>updated {timeAgo(approval.updatedAt)}</span>
+              {requesterName ? <span>{t("inbox.actions.requestedBy", "requested by {{name}}", { name: requesterName })}</span> : null}
+              <span>{t("inbox.actions.updated", "updated {{time}}", { time: timeAgo(approval.updatedAt) })}</span>
             </span>
           </span>
         </Link>
@@ -601,7 +604,7 @@ function ApprovalInboxRow({
                   onClick={onApprove}
                   disabled={isPending}
                 >
-                  Approve
+                  {t("inbox.actions.approve", "Approve")}
                 </Button>
                 <Button
                   variant="destructive"
@@ -610,7 +613,7 @@ function ApprovalInboxRow({
                   onClick={onReject}
                   disabled={isPending}
                 >
-                  Reject
+                  {t("inbox.actions.reject", "Reject")}
                 </Button>
               </>
             ) : null}
@@ -625,7 +628,7 @@ function ApprovalInboxRow({
             onClick={onApprove}
             disabled={isPending}
           >
-            Approve
+            {t("inbox.actions.approve", "Approve")}
           </Button>
           <Button
             variant="destructive"
@@ -634,7 +637,7 @@ function ApprovalInboxRow({
             onClick={onReject}
             disabled={isPending}
           >
-            Reject
+            {t("inbox.actions.reject", "Reject")}
           </Button>
         </div>
       ) : null}
@@ -665,6 +668,7 @@ function JoinRequestInboxRow({
   selected?: boolean;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const label = formatJoinRequestInboxLabel(joinRequest);
   const showUnreadSlot = unreadState !== null;
   const showUnreadDot = unreadState === "visible" || unreadState === "fading";
@@ -685,7 +689,7 @@ function JoinRequestInboxRow({
                   "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
                   "hover:bg-blue-500/20",
                 )}
-                aria-label="Mark as read"
+                aria-label={t("inbox.actions.markAsRead", "Mark as read")}
               >
                 <span className={cn(
                   "block h-2 w-2 rounded-full transition-opacity duration-300",
@@ -724,7 +728,7 @@ function JoinRequestInboxRow({
             onClick={onApprove}
             disabled={isPending}
           >
-            Approve
+            {t("inbox.actions.approve", "Approve")}
           </Button>
           <Button
             variant="destructive"
@@ -733,7 +737,7 @@ function JoinRequestInboxRow({
             onClick={onReject}
             disabled={isPending}
           >
-            Reject
+            {t("inbox.actions.reject", "Reject")}
           </Button>
         </div>
       </div>
@@ -744,7 +748,7 @@ function JoinRequestInboxRow({
           onClick={onApprove}
           disabled={isPending}
         >
-          Approve
+          {t("inbox.actions.approve", "Approve")}
         </Button>
         <Button
           variant="destructive"
@@ -753,7 +757,7 @@ function JoinRequestInboxRow({
           onClick={onReject}
           disabled={isPending}
         >
-          Reject
+          {t("inbox.actions.reject", "Reject")}
         </Button>
       </div>
     </div>
@@ -825,6 +829,7 @@ function StreamlinedInbox({
   surfaceLabel = "Inbox",
 }: InboxSurfaceProps) {
   const streamlinedUiEnabled = true;
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { openNewIssue } = useDialogActions();
@@ -2421,24 +2426,24 @@ function StreamlinedInbox({
       issueFilters.statuses.includes(status as IssueFilterState["statuses"][number]),
     );
   const issueFilterFeedback = issueFilters.liveOnly
-    ? "Live runs only — tasks currently connected to an agent run."
+    ? t("inbox.toolbar.liveRunsFeedback", "Live runs only — tasks currently connected to an agent run.")
     : activeStatusFilterApplied
-      ? "Active statuses — open tasks, whether or not an agent is running."
+      ? t("inbox.toolbar.activeStatusesFeedback", "Active statuses — open tasks, whether or not an agent is running.")
       : null;
   return (
     <div className="space-y-6">
       <InboxCollectionToolbar
         streamlined={streamlinedUiEnabled}
-        ariaLabel={`${surfaceLabel} controls`}
+        ariaLabel={t("inbox.toolbar.controlsAriaLabel", "{{surface}} controls", { surface: surfaceLabel })}
         context={toolbarContext ?? (
           <Tabs value={tab} onValueChange={(value) => navigate(`/inbox/${value}`)}>
             <PageTabBar
               items={[
-                { value: "mine", label: "Mine" },
-                { value: "recent", label: "Recent" },
-                { value: "unread", label: "Unread" },
-                { value: "blocked", label: "Blocked" },
-                { value: "all", label: "All" },
+                { value: "mine", label: t("inbox.tabs.mine", "Mine") },
+                { value: "recent", label: t("inbox.tabs.recent", "Recent") },
+                { value: "unread", label: t("inbox.tabs.unread", "Unread") },
+                { value: "blocked", label: t("inbox.tabs.blocked", "Blocked") },
+                { value: "all", label: t("inbox.tabs.all", "All") },
               ]}
             />
           </Tabs>
@@ -2448,7 +2453,11 @@ function StreamlinedInbox({
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder={`Search ${surfaceLabel.toLowerCase()}…`}
+              placeholder={
+                surfaceLabel.toLowerCase() === "inbox"
+                  ? t("inbox.toolbar.searchInbox", "Search inbox…")
+                  : t("inbox.toolbar.search", "Search {{surface}}…", { surface: surfaceLabel.toLowerCase() })
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -2499,7 +2508,7 @@ function StreamlinedInbox({
                     variant="outline"
                     size="icon"
                     className={cn("h-8 w-8 shrink-0", blockedGroupBy !== "none" && "bg-accent")}
-                    title="Group"
+                    title={t("inbox.toolbar.group", "Group")}
                   >
                     <Layers className="h-3.5 w-3.5" />
                   </Button>
@@ -2535,7 +2544,7 @@ function StreamlinedInbox({
                   }));
                 }}
                 onResetColumns={() => setIssueColumns(DEFAULT_INBOX_ISSUE_COLUMNS)}
-                title="Choose which columns stay visible"
+                title={t("inbox.toolbar.chooseColumnsTitle", "Choose which columns stay visible")}
                 iconOnly
               />
               <Popover>
@@ -2545,7 +2554,7 @@ function StreamlinedInbox({
                     variant="outline"
                     size="icon"
                     className="h-8 w-8 shrink-0"
-                    title="Sort"
+                    title={t("inbox.toolbar.sort", "Sort")}
                   >
                     <ArrowUpDown className="h-3.5 w-3.5" />
                   </Button>
@@ -2578,7 +2587,7 @@ function StreamlinedInbox({
                 size="icon"
                 className={cn("hidden h-8 w-8 shrink-0 sm:inline-flex", nestingEnabled && "bg-accent")}
                 onClick={toggleNesting}
-                title={nestingEnabled ? "Disable parent-child nesting" : "Enable parent-child nesting"}
+                title={nestingEnabled ? t("inbox.toolbar.disableNesting", "Disable parent-child nesting") : t("inbox.toolbar.enableNesting", "Enable parent-child nesting")}
               >
                 <ListTree className="h-3.5 w-3.5" />
               </Button>
@@ -2618,7 +2627,7 @@ function StreamlinedInbox({
                     variant="outline"
                     size="icon"
                     className={cn("h-8 w-8 shrink-0", groupBy !== "none" && "bg-accent")}
-                    title="Group"
+                    title={t("inbox.toolbar.group", "Group")}
                   >
                     <Layers className="h-3.5 w-3.5" />
                   </Button>
@@ -2626,11 +2635,11 @@ function StreamlinedInbox({
                 <PopoverContent align="end" className="w-40 p-2">
                   <div className="space-y-0.5">
                     {([
-                      ["none", "None"],
-                      ["type", "Type"],
-                      ["assignee", "Responsible"],
-                      ["project", "Project"],
-                      ...(isolatedWorkspacesEnabled ? ([["workspace", "Workspace"]] as const) : []),
+                      ["none", t("inbox.toolbar.groupBy.none", "None")],
+                      ["type", t("inbox.toolbar.groupBy.type", "Type")],
+                      ["assignee", t("inbox.toolbar.groupBy.assignee", "Responsible")],
+                      ["project", t("inbox.toolbar.groupBy.project", "Project")],
+                      ...(isolatedWorkspacesEnabled ? ([["workspace", t("inbox.toolbar.groupBy.workspace", "Workspace")]] as const) : []),
                     ] as const).map(([value, label]) => (
                       <button
                         key={value}
@@ -2660,7 +2669,7 @@ function StreamlinedInbox({
                   }));
                 }}
                 onResetColumns={() => setIssueColumns(DEFAULT_INBOX_ISSUE_COLUMNS)}
-                title="Choose which columns stay visible"
+                title={t("inbox.toolbar.chooseColumnsTitle", "Choose which columns stay visible")}
                 iconOnly
                 rowPresentation={streamlinedUiEnabled ? "task" : "legacy"}
               />
@@ -2674,19 +2683,22 @@ function StreamlinedInbox({
                     onClick={() => setShowMarkAllReadConfirm(true)}
                     disabled={markAllReadMutation.isPending}
                   >
-                    {markAllReadMutation.isPending ? "Marking…" : "Mark all as read"}
+                    {markAllReadMutation.isPending ? t("inbox.toolbar.marking", "Marking…") : t("inbox.toolbar.markAllAsRead", "Mark all as read")}
                   </Button>
                   <Dialog open={showMarkAllReadConfirm} onOpenChange={setShowMarkAllReadConfirm}>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle>Mark all as read?</DialogTitle>
+                        <DialogTitle>{t("inbox.toolbar.markAllConfirmTitle", "Mark all as read?")}</DialogTitle>
                         <DialogDescription>
-                          This will mark {unreadIssueIds.length} unread {unreadIssueIds.length === 1 ? "item" : "items"} as read.
+                          {t("inbox.toolbar.markAllConfirmDesc", "This will mark {{count}} unread {{itemWord}} as read.", {
+                            count: unreadIssueIds.length,
+                            itemWord: unreadIssueIds.length === 1 ? t("inbox.toolbar.itemSingular", "item") : t("inbox.toolbar.itemPlural", "items"),
+                          })}
                         </DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
                         <Button variant="outline" onClick={() => setShowMarkAllReadConfirm(false)}>
-                          Cancel
+                          {t("inbox.toolbar.cancel", "Cancel")}
                         </Button>
                         <Button
                           onClick={() => {
@@ -2694,7 +2706,7 @@ function StreamlinedInbox({
                             markAllReadMutation.mutate(unreadIssueIds);
                           }}
                         >
-                          Mark all as read
+                          {t("inbox.toolbar.markAllAsRead", "Mark all as read")}
                         </Button>
                       </DialogFooter>
                     </DialogContent>
@@ -2747,14 +2759,14 @@ function StreamlinedInbox({
           icon={searchQuery.trim() ? Search : InboxIcon}
           message={
             searchQuery.trim()
-              ? "No inbox items match your search."
+              ? t("inbox.empty.noMatchSearch", "No inbox items match your search.")
               : tab === "mine"
-              ? "Inbox zero."
+              ? t("inbox.empty.mine", "Inbox zero.")
               : tab === "unread"
-              ? "No new inbox items."
+              ? t("inbox.empty.unread", "No new inbox items.")
               : tab === "recent"
-                ? "No recent inbox items."
-                : "No inbox items match these filters."
+                ? t("inbox.empty.recent", "No recent inbox items.")
+                : t("inbox.empty.noMatchFilters", "No inbox items match these filters.")
           }
         />
       )}
@@ -3042,11 +3054,18 @@ function StreamlinedInbox({
                       </div>
                     );
                     const currentDateGroup = taskDateGroup(item.timestamp);
-                    const dateGroupLabel = streamlinedUiEnabled
+                    const rawDateGroupLabel = streamlinedUiEnabled
                       && filterPreferences.showDateGroupSeparators
                       && groupBy === "none"
                       ? taskDateGroupSeparator(previousDateGroup, currentDateGroup)
                       : null;
+                    const dateGroupLabel = rawDateGroupLabel === "Today"
+                      ? t("inbox.empty.today", "Today")
+                      : rawDateGroupLabel === "Yesterday"
+                      ? t("inbox.empty.yesterday", "Yesterday")
+                      : rawDateGroupLabel === "Earlier"
+                      ? t("inbox.empty.earlier", "Earlier")
+                      : rawDateGroupLabel;
                     previousDateGroup = currentDateGroup;
                     const showLegacyEarlierDivider = !streamlinedUiEnabled
                       && groupBy === "none"
@@ -3081,7 +3100,7 @@ function StreamlinedInbox({
                             className="shrink-0 text-(length:--text-micro) font-medium uppercase tracking-wider text-muted-foreground/70"
                             data-date-group-label=""
                           >
-                            Earlier
+                            {t("inbox.empty.earlier", "Earlier")}
                           </span>
                         </div>,
                       );
@@ -3296,7 +3315,7 @@ function StreamlinedInbox({
           {showSeparatorBefore("alerts") && <Separator />}
           <div>
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Alerts
+              {t("inbox.alerts.title", "Alerts")}
             </h3>
             <div className="divide-y divide-border border border-border">
               {showAggregateAgentError && (
@@ -3308,14 +3327,16 @@ function StreamlinedInbox({
                     <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
                     <span className="text-sm">
                       <span className="font-medium">{dashboard!.agents.error}</span>{" "}
-                      {dashboard!.agents.error === 1 ? "agent has" : "agents have"} errors
+                      {dashboard!.agents.error === 1
+                        ? t("inbox.alerts.agentsErrorsSingular", "agent has errors")
+                        : t("inbox.alerts.agentsErrorsPlural", "agents have errors")}
                     </span>
                   </Link>
                   <button
                     type="button"
                     onClick={() => dismissAlert("alert:agent-errors")}
                     className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
-                    aria-label="Dismiss"
+                    aria-label={t("inbox.alerts.dismiss", "Dismiss")}
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -3329,16 +3350,16 @@ function StreamlinedInbox({
                   >
                     <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-400" />
                     <span className="text-sm">
-                      Budget at{" "}
-                      <span className="font-medium">{dashboard!.costs.monthUtilizationPercent}%</span>{" "}
-                      utilization this month
+                      {t("inbox.alerts.budgetUtilization", "Budget at {{percent}}% utilization this month", {
+                        percent: dashboard!.costs.monthUtilizationPercent,
+                      })}
                     </span>
                   </Link>
                   <button
                     type="button"
                     onClick={() => dismissAlert("alert:budget")}
                     className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
-                    aria-label="Dismiss"
+                    aria-label={t("inbox.alerts.dismiss", "Dismiss")}
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>

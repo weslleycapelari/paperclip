@@ -1,4 +1,5 @@
 import { cloneElement, isValidElement, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CalendarRange } from "lucide-react";
 import {
   ATTENTION_DATE_RANGE_OPTIONS,
@@ -26,13 +27,23 @@ interface DecisionDateChipsProps {
  * filter on the client. "Custom" opens a from/to range picker.
  */
 export function DecisionDateChips({ value, custom, onChange }: DecisionDateChipsProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+
+  const dateLabels: Record<AttentionDateRangeId, string> = {
+    all: t("decisions.dateChips.all", "All"),
+    today: t("decisions.dateChips.today", "Today"),
+    yesterday: t("decisions.dateChips.yesterday", "Yesterday"),
+    last_7_days: t("decisions.dateChips.last7Days", "Last 7 days"),
+    this_month: t("decisions.dateChips.thisMonth", "This month"),
+    custom: t("decisions.dateChips.custom", "Custom"),
+  };
 
   return (
     <div className="flex flex-wrap items-center gap-1.5" data-decision-date-chips>
       {ATTENTION_DATE_RANGE_OPTIONS.map(([id, label]) => (
         <ChipButton key={id} active={value === id} onClick={() => onChange(id, custom)}>
-          {label}
+          {dateLabels[id] ?? label}
         </ChipButton>
       ))}
       <Popover open={open} onOpenChange={setOpen}>
@@ -42,14 +53,14 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
               <CalendarRange className="h-3.5 w-3.5" />
               {value === "custom" && (custom.from || custom.to)
                 ? `${custom.from ?? "…"} → ${custom.to ?? "…"}`
-                : "Custom"}
+                : t("decisions.dateChips.custom", "Custom")}
             </button>
           </ChipButton>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-auto space-y-2 p-3">
           <div className="flex flex-col gap-1.5">
             <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
-              From
+              {t("decisions.dateChips.from", "From")}
             </label>
             <input
               type="date"
@@ -61,7 +72,7 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
-              To
+              {t("decisions.dateChips.to", "To")}
             </label>
             <input
               type="date"
@@ -81,7 +92,7 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
                 setOpen(false);
               }}
             >
-              Clear
+              {t("decisions.dateChips.clear", "Clear")}
             </Button>
           </div>
         </PopoverContent>
