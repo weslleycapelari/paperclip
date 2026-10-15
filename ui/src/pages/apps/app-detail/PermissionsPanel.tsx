@@ -1,5 +1,6 @@
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Ban, Check, FlaskConical, Loader2, RefreshCw, Search, ShieldQuestion } from "lucide-react";
 import type { Agent, ToolCatalogEntry, ToolConnectionCapabilities } from "@paperclipai/shared";
 import { useSearchParams } from "@/lib/router";
@@ -114,6 +115,7 @@ function AgentAccessSection({
   disabled: boolean;
   onSave: (next: AccessDraft) => void;
 }) {
+  const { t } = useTranslation();
   const liveAgents = agents.filter((agent) => agent.status !== "terminated");
   const canManage = capabilities?.canConfigure ?? false;
   const editableAgentIds = capabilities?.editableAgentIds;
@@ -126,14 +128,16 @@ function AgentAccessSection({
   return (
     <section className="space-y-4 border-t border-border pt-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-foreground">Which agents can use this connection?</h2>
-        {disabled ? <span className="text-xs text-muted-foreground">Saving…</span> : null}
+        <h2 className="text-sm font-semibold text-foreground">
+          {t("access.permissionsPanel.whichAgentsCanUse", { defaultValue: "Which agents can use this connection?" })}
+        </h2>
+        {disabled ? <span className="text-xs text-muted-foreground">{t("common.saving", { defaultValue: "Saving…" })}</span> : null}
       </div>
 
       {canManage ? (
         <div className="space-y-3">
           <RadioCardGroup
-            ariaLabel="Which agents can use this connection"
+            ariaLabel={t("access.permissionsPanel.whichAgentsCanUse", { defaultValue: "Which agents can use this connection?" })}
             value={access.mode}
             disabled={disabled}
             className="sm:grid-cols-2"
@@ -147,16 +151,16 @@ function AgentAccessSection({
             options={[
               {
                 value: "specific",
-                title: "Just agents I pick",
+                title: t("access.permissionsPanel.justAgentsIPick", { defaultValue: "Just agents I pick" }),
                 description: install.onAll
-                  ? "Unavailable while this connection is installed for every agent."
-                  : "Available only to selected agents.",
+                  ? t("access.permissionsPanel.unavailableAllInstalled", { defaultValue: "Unavailable while this connection is installed for every agent." })
+                  : t("access.permissionsPanel.justAgentsIPickDesc", { defaultValue: "Available only to selected agents." }),
                 disabled: install.onAll,
               },
               {
                 value: "all",
-                title: "Any agent",
-                description: "Available across your company.",
+                title: t("access.permissionsPanel.anyAgent", { defaultValue: "Any agent" }),
+                description: t("access.permissionsPanel.anyAgentDesc", { defaultValue: "Available across your company." }),
               },
             ]}
           />
@@ -167,11 +171,14 @@ function AgentAccessSection({
               selectedAgentIds={access.agentIds}
               disabled={disabled}
               triggerLabel={access.agentIds.size === 0
-                ? "Choose agents"
-                : `${access.agentIds.size} ${access.agentIds.size === 1 ? "agent" : "agents"} selected`}
-              emptyMessage="You cannot edit any agents yet."
+                ? t("access.permissionsPanel.chooseAgents", { defaultValue: "Choose agents" })
+                : t(access.agentIds.size === 1 ? "access.permissionsPanel.agentsSelected_one" : "access.permissionsPanel.agentsSelected_other", {
+                    count: access.agentIds.size,
+                    defaultValue: `${access.agentIds.size} ${access.agentIds.size === 1 ? "agent" : "agents"} selected`,
+                  })}
+              emptyMessage={t("access.permissionsPanel.cannotEditAgentsYet", { defaultValue: "You cannot edit any agents yet." })}
               isAgentDisabled={(agent) => requiredAgentIds.has(agent.id)}
-              getDescription={(agent) => requiredAgentIds.has(agent.id) ? "Required by this connection's install setting" : agent.title}
+              getDescription={(agent) => requiredAgentIds.has(agent.id) ? t("access.permissionsPanel.requiredByInstallSetting", { defaultValue: "Required by this connection's install setting" }) : agent.title}
               onChange={(agentIds) => onSave({
                 mode: "specific",
                 agentIds: new Set([...agentIds, ...requiredAgentIds]),
@@ -180,9 +187,9 @@ function AgentAccessSection({
           ) : null}
         </div>
       ) : access.mode === "all" ? (
-        <p className="text-sm text-muted-foreground">Any agent can use this connection.</p>
+        <p className="text-sm text-muted-foreground">{t("access.permissionsPanel.anyAgentCanUseNotice", { defaultValue: "Any agent can use this connection." })}</p>
       ) : selectedAgents.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No agents can use this connection.</p>
+        <p className="text-sm text-muted-foreground">{t("access.permissionsPanel.noAgentsCanUseNotice", { defaultValue: "No agents can use this connection." })}</p>
       ) : (
         <div className="space-y-0.5">
           {selectedAgents.map((agent) => (
@@ -230,6 +237,7 @@ export function ActionsSection({
   onReviewQuarantined: (enabledIds: string[]) => void;
   onRefreshActions: () => void;
 }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [kindFilter, setKindFilter] = useState<ActionKindFilter>("all");
   const [showPermissionChangeWarning, setShowPermissionChangeWarning] = useState(false);
@@ -250,10 +258,12 @@ export function ActionsSection({
   return (
     <section className="space-y-6 border-t border-border pt-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-foreground">Actions</h2>
+        <h2 className="text-lg font-semibold text-foreground">
+          {t("access.permissionsPanel.actions", { defaultValue: "Actions" })}
+        </h2>
         {canConfigure ? (
           <div className="flex items-center gap-2">
-            {disabled ? <span className="text-xs text-muted-foreground">Saving…</span> : null}
+            {disabled ? <span className="text-xs text-muted-foreground">{t("common.saving", { defaultValue: "Saving…" })}</span> : null}
             <Button
               variant="outline"
               size="sm"
@@ -265,7 +275,7 @@ export function ActionsSection({
               ) : (
                 <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
               )}
-              Refresh actions
+              {t("access.permissionsPanel.refreshActions", { defaultValue: "Refresh actions" })}
             </Button>
           </div>
         ) : null}
@@ -290,28 +300,42 @@ export function ActionsSection({
           <div className="relative min-w-(--sz-12rem) flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              aria-label="Find an action"
-              placeholder="Find an action…"
+              aria-label={t("access.permissionsPanel.findAnAction", { defaultValue: "Find an action" })}
+              placeholder={t("access.permissionsPanel.findAnActionPlaceholder", { defaultValue: "Find an action…" })}
               className="pl-9"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
-          <FilterChip label={`All ${readOnly.length + canChange.length}`} active={kindFilter === "all"} onClick={() => setKindFilter("all")} />
-          <FilterChip label={`Read ${readOnly.length}`} active={kindFilter === "read"} onClick={() => setKindFilter("read")} />
-          <FilterChip label={`Write ${canChange.length}`} active={kindFilter === "write"} onClick={() => setKindFilter("write")} />
+          <FilterChip
+            label={`${t("access.permissionsPanel.all", { defaultValue: "All" })} ${readOnly.length + canChange.length}`}
+            active={kindFilter === "all"}
+            onClick={() => setKindFilter("all")}
+          />
+          <FilterChip
+            label={`${t("access.permissionsPanel.read", { defaultValue: "Read" })} ${readOnly.length}`}
+            active={kindFilter === "read"}
+            onClick={() => setKindFilter("read")}
+          />
+          <FilterChip
+            label={`${t("access.permissionsPanel.write", { defaultValue: "Write" })} ${canChange.length}`}
+            active={kindFilter === "write"}
+            onClick={() => setKindFilter("write")}
+          />
         </div>
-        <p className="text-xs text-muted-foreground">{visibleCount} matches · sorted A–Z</p>
+        <p className="text-xs text-muted-foreground">
+          {t("access.permissionsPanel.matchesSorted", { count: visibleCount, defaultValue: `${visibleCount} matches · sorted A–Z` })}
+        </p>
       </div>
 
       {visibleCount === 0 ? (
         <div className="py-6 text-center text-sm text-muted-foreground">
-          No actions match “{query}”. Clear the search to see them all.
+          {t("access.permissionsPanel.noActionsMatch", { query, defaultValue: `No actions match “${query}”. Clear the search to see them all.` })}
         </div>
       ) : (
         <div className="space-y-6">
           <ActionGroup
-            title={`Read (${visibleRead.length})`}
+            title={`${t("access.permissionsPanel.read", { defaultValue: "Read" })} (${visibleRead.length})`}
             actions={visibleRead}
             connectionId={connectionId}
             appName={appName}
@@ -326,7 +350,7 @@ export function ActionsSection({
             }}
           />
           <ActionGroup
-            title={`Write (${visibleWrite.length})`}
+            title={`${t("access.permissionsPanel.write", { defaultValue: "Write" })} (${visibleWrite.length})`}
             actions={visibleWrite}
             connectionId={connectionId}
             appName={appName}
@@ -364,6 +388,33 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
   );
 }
 
+function usePermissionOptions() {
+  const { t } = useTranslation();
+  return useMemo(
+    () => [
+      {
+        value: "off" as const,
+        label: t("access.permissionsPanel.off", { defaultValue: "Off" }),
+        description: t("access.permissionsPanel.offDesc", { defaultValue: "Agents cannot run this action." }),
+        icon: Ban,
+      },
+      {
+        value: "ask" as const,
+        label: t("access.permissionsPanel.askFirst", { defaultValue: "Ask first" }),
+        description: t("access.permissionsPanel.askFirstDesc", { defaultValue: "A human must approve each call." }),
+        icon: ShieldQuestion,
+      },
+      {
+        value: "allowed" as const,
+        label: t("access.permissionsPanel.allowed", { defaultValue: "Allowed" }),
+        description: t("access.permissionsPanel.allowedDesc", { defaultValue: "Runs without approval." }),
+        icon: Check,
+      },
+    ],
+    [t],
+  );
+}
+
 function ActionGroup({
   title,
   actions,
@@ -387,6 +438,8 @@ function ActionGroup({
   canConfigure: boolean;
   onSetPermission: (ids: string[], next: ActionPermission) => void;
 }) {
+  const { t } = useTranslation();
+  const permissionOptions = usePermissionOptions();
   if (actions.length === 0) return null;
   const groupValue = (() => {
     const first = actionPermission(actions[0]!.id, enabledIds, askFirstIds);
@@ -403,9 +456,17 @@ function ActionGroup({
           // connection's writes is one choice rather than one per action;
           // per-row overrides stay underneath.
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="sr-only">{`Set every action in ${title}`}</span>
+            <span className="sr-only">
+              {t("access.permissionsPanel.setEveryActionInGroup", {
+                group: title,
+                defaultValue: `Set every action in ${title}`,
+              })}
+            </span>
             <select
-              aria-label={`Set every action in ${title}`}
+              aria-label={t("access.permissionsPanel.setEveryActionInGroup", {
+                group: title,
+                defaultValue: `Set every action in ${title}`,
+              })}
               value={groupValue}
               disabled={disabled}
               onChange={(event) => {
@@ -416,9 +477,16 @@ function ActionGroup({
               }}
               className="h-7 rounded-md border border-input bg-background px-2 text-xs text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
             >
-              {groupValue === "" ? <option value="">Mixed</option> : null}
-              {PERMISSION_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{`Set all: ${option.label}`}</option>
+              {groupValue === "" ? (
+                <option value="">{t("access.permissionsPanel.mixed", { defaultValue: "Mixed" })}</option>
+              ) : null}
+              {permissionOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {t("access.permissionsPanel.setAllOption", {
+                    label: option.label,
+                    defaultValue: `Set all: ${option.label}`,
+                  })}
+                </option>
               ))}
             </select>
           </label>
@@ -443,17 +511,6 @@ function ActionGroup({
   );
 }
 
-const PERMISSION_OPTIONS: Array<{
-  value: ActionPermission;
-  label: string;
-  description: string;
-  icon: typeof Ban;
-}> = [
-  { value: "off", label: "Off", description: "Agents cannot run this action.", icon: Ban },
-  { value: "ask", label: "Ask first", description: "A human must approve each call.", icon: ShieldQuestion },
-  { value: "allowed", label: "Allowed", description: "Runs without approval.", icon: Check },
-];
-
 function ActionRow({
   action,
   connectionId,
@@ -473,6 +530,8 @@ function ActionRow({
   canConfigure: boolean;
   onSetPermission: (ids: string[], next: ActionPermission) => void;
 }) {
+  const { t } = useTranslation();
+  const permissionOptions = usePermissionOptions();
   const rowRef = useRef<HTMLDivElement | null>(null);
   const [testOpen, setTestOpen] = useState(false);
   const title = action.title ?? action.toolName;
@@ -516,7 +575,7 @@ function ActionRow({
                 aria-label={`${title} permission`}
                 className="inline-flex rounded-md border border-border bg-muted/40 p-0.5"
               >
-              {PERMISSION_OPTIONS.map((option) => {
+              {permissionOptions.map((option) => {
                 const Icon = option.icon;
                 const selected = option.value === value;
                 return (
@@ -549,12 +608,12 @@ function ActionRow({
             </TooltipProvider>
           ) : (
             <span className="text-sm text-muted-foreground">
-              {PERMISSION_OPTIONS.find((option) => option.value === value)?.label}
+              {permissionOptions.find((option) => option.value === value)?.label}
             </span>
           )}
           <Button type="button" size="sm" variant="outline" onClick={() => setTestOpen(true)}>
             <FlaskConical className="mr-1.5 h-3.5 w-3.5" />
-            Test
+            {t("access.permissionsPanel.test", { defaultValue: "Test" })}
           </Button>
         </div>
       </div>

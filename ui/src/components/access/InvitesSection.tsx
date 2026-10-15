@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy } from "lucide-react";
 import { accessApi } from "@/api/access";
@@ -47,6 +48,7 @@ function isInviteHistoryRow(value: unknown): value is Awaited<ReturnType<typeof 
 
 /** The Invites tab of the Members page (extracted from the former standalone Invites page). */
 export function InvitesSection() {
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
@@ -121,14 +123,14 @@ export function InvitesSection() {
 
       await queryClient.invalidateQueries({ queryKey: inviteHistoryQueryKey });
       pushToast({
-        title: "Invite created",
+        title: t("access.invites.inviteCreated", { defaultValue: "Invite created" }),
         body: copied ? "Invite ready below and copied to clipboard." : "Invite ready below.",
         tone: "success",
       });
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to create invite",
+        title: t("access.invites.failedToCreateInvite", { defaultValue: "Failed to create invite" }),
         body: error instanceof Error ? error.message : "Unknown error",
         tone: "error",
       });
@@ -139,11 +141,11 @@ export function InvitesSection() {
     mutationFn: (inviteId: string) => accessApi.revokeInvite(inviteId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: inviteHistoryQueryKey });
-      pushToast({ title: "Invite revoked", tone: "success" });
+      pushToast({ title: t("access.invites.inviteRevoked", { defaultValue: "Invite revoked" }), tone: "success" });
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to revoke invite",
+        title: t("access.invites.failedToRevokeInvite", { defaultValue: "Failed to revoke invite" }),
         body: error instanceof Error ? error.message : "Unknown error",
         tone: "error",
       });
@@ -151,40 +153,39 @@ export function InvitesSection() {
   });
 
   if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">Select an organization to manage invites.</div>;
+    return <div className="text-sm text-muted-foreground">{t("access.invites.selectOrgToManageInvites", { defaultValue: "Select an organization to manage invites." })}</div>;
   }
 
   if (invitesQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading invites…</div>;
+    return <div className="text-sm text-muted-foreground">{t("access.invites.loadingInvites", { defaultValue: "Loading invites…" })}</div>;
   }
 
   if (invitesQuery.error) {
     const message =
       invitesQuery.error instanceof ApiError && invitesQuery.error.status === 403
-        ? "You do not have permission to manage organization invites."
+        ? t("access.invites.noPermissionManageInvites", { defaultValue: "You do not have permission to manage organization invites." })
         : invitesQuery.error instanceof Error
           ? invitesQuery.error.message
-          : "Failed to load invites.";
+          : t("access.invites.failedToLoadInvites", { defaultValue: "Failed to load invites." });
     return <div className="text-sm text-destructive">{message}</div>;
   }
 
   return (
     <div className="max-w-6xl space-y-8">
       <p className="max-w-3xl text-sm text-muted-foreground">
-        Invite people to request access to this organization. New invite links are copied to your clipboard when they are
-        generated.
+        {t("access.invites.description", { defaultValue: "Invite people to request access to this organization. New invite links are copied to your clipboard when they are generated." })}
       </p>
 
       <section className="space-y-4 rounded-xl border border-border p-5">
         <div className="space-y-1">
-          <h2 className="text-sm font-semibold">Invite a person</h2>
+          <h2 className="text-sm font-semibold">{t("access.invites.invitePerson", { defaultValue: "Invite a person" })}</h2>
           <p className="text-sm text-muted-foreground">
-            Generate a human invite link and choose the default access it should request.
+            {t("access.invites.invitePersonDesc", { defaultValue: "Generate a human invite link and choose the default access it should request." })}
           </p>
         </div>
 
         <fieldset className="space-y-3">
-          <legend className="text-sm font-medium">Choose a role</legend>
+          <legend className="text-sm font-medium">{t("access.invites.chooseRole", { defaultValue: "Choose a role" })}</legend>
           <div className="rounded-xl border border-border">
             {inviteRoleOptions.map((option, index) => {
               const checked = humanRole === option.value;
@@ -203,15 +204,15 @@ export function InvitesSection() {
                   />
                   <span className="min-w-0 space-y-1">
                     <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium">{option.label}</span>
+                      <span className="text-sm font-medium">{t(`access.invites.roles.${option.value}.label`, { defaultValue: option.label })}</span>
                       {option.value === "operator" ? (
                         <Badge variant="outline" className="border-border text-muted-foreground">
-                          Default
+                          {t("access.invites.default", { defaultValue: "Default" })}
                         </Badge>
                       ) : null}
                     </span>
-                    <span className="block max-w-2xl text-sm text-muted-foreground">{option.description}</span>
-                    <span className="block text-sm text-foreground">{option.gets}</span>
+                    <span className="block max-w-2xl text-sm text-muted-foreground">{t(`access.invites.roles.${option.value}.description`, { defaultValue: option.description })}</span>
+                    <span className="block text-sm text-foreground">{t(`access.invites.roles.${option.value}.gets`, { defaultValue: option.gets })}</span>
                   </span>
                 </label>
               );
@@ -220,34 +221,34 @@ export function InvitesSection() {
         </fieldset>
 
         <div className="rounded-lg border border-border px-4 py-3 text-sm text-muted-foreground">
-          Each invite link is single-use. Human invitees get the selected role immediately after sign-in; agent invites still create a join request for approval.
+          {t("access.invites.singleUseNotice", { defaultValue: "Each invite link is single-use. Human invitees get the selected role immediately after sign-in; agent invites still create a join request for approval." })}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => createInviteMutation.mutate()} disabled={createInviteMutation.isPending}>
-            {createInviteMutation.isPending ? "Creating…" : "Create invite"}
+            {createInviteMutation.isPending ? t("access.invites.creating", { defaultValue: "Creating…" }) : t("access.invites.createInvite", { defaultValue: "Create invite" })}
           </Button>
-          <span className="text-sm text-muted-foreground">Invite history below keeps the audit trail.</span>
+          <span className="text-sm text-muted-foreground">{t("access.invites.inviteHistoryAuditNotice", { defaultValue: "Invite history below keeps the audit trail." })}</span>
         </div>
 
         {latestInviteUrl ? (
           <div className="space-y-3 rounded-lg border border-border px-4 py-4">
             <div className="space-y-1">
               <div className="flex items-center justify-between gap-3">
-                <div className="text-sm font-medium">Latest invite link</div>
+                <div className="text-sm font-medium">{t("access.invites.latestInviteLink", { defaultValue: "Latest invite link" })}</div>
                 {latestInviteCopied ? (
                   <div className="inline-flex items-center gap-1 text-xs font-medium text-foreground">
                     <Check className="h-3.5 w-3.5" />
-                    Copied
+                    {t("common.copied", { defaultValue: "Copied" })}
                   </div>
                 ) : null}
               </div>
               <div className="text-sm text-muted-foreground">
-                This URL includes the current Paperclip domain returned by the server.
+                {t("access.invites.urlDomainNotice", { defaultValue: "This URL includes the current Paperclip domain returned by the server." })}
               </div>
             </div>
             <label className="block space-y-1">
-              <span className="sr-only">Latest invite URL</span>
+              <span className="sr-only">{t("access.invites.latestInviteLink", { defaultValue: "Latest invite URL" })}</span>
               <input
                 ref={latestInviteInputRef}
                 readOnly
@@ -269,7 +270,7 @@ export function InvitesSection() {
                 }}
               >
                 <Copy className="h-4 w-4" />
-                Copy link
+                {t("access.invites.copyLink", { defaultValue: "Copy link" })}
               </Button>
             </div>
           </div>
@@ -279,19 +280,19 @@ export function InvitesSection() {
       <section className="rounded-xl border border-border">
         <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
           <div className="space-y-1">
-            <h2 className="text-sm font-semibold">Invite history</h2>
+            <h2 className="text-sm font-semibold">{t("access.invites.inviteHistory", { defaultValue: "Invite history" })}</h2>
             <p className="text-sm text-muted-foreground">
-              Review invite status, audience, inviter, and any linked join request.
+              {t("access.invites.inviteHistoryDesc", { defaultValue: "Review invite status, audience, inviter, and any linked join request." })}
             </p>
           </div>
           <Link to="/inbox/requests" className="text-sm underline underline-offset-4">
-            Open join request queue
+            {t("access.invites.openJoinRequestQueue", { defaultValue: "Open join request queue" })}
           </Link>
         </div>
 
         {inviteHistory.length === 0 ? (
           <div className="border-t border-border px-5 py-8 text-sm text-muted-foreground">
-            No invites have been created for this organization yet.
+            {t("access.invites.noInvitesYet", { defaultValue: "No invites have been created for this organization yet." })}
           </div>
         ) : (
           <div className="border-t border-border">
@@ -299,12 +300,12 @@ export function InvitesSection() {
               <table className="min-w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="px-5 py-3 font-medium text-muted-foreground">State</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">For</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Invited by</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Created</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Join request</th>
-                    <th className="px-5 py-3 text-right font-medium text-muted-foreground">Action</th>
+                    <th className="px-5 py-3 font-medium text-muted-foreground">{t("access.invites.state", { defaultValue: "State" })}</th>
+                    <th className="px-5 py-3 font-medium text-muted-foreground">{t("access.invites.for", { defaultValue: "For" })}</th>
+                    <th className="px-5 py-3 font-medium text-muted-foreground">{t("access.invites.invitedBy", { defaultValue: "Invited by" })}</th>
+                    <th className="px-5 py-3 font-medium text-muted-foreground">{t("access.invites.created", { defaultValue: "Created" })}</th>
+                    <th className="px-5 py-3 font-medium text-muted-foreground">{t("access.invites.joinRequest", { defaultValue: "Join request" })}</th>
+                    <th className="px-5 py-3 text-right font-medium text-muted-foreground">{t("access.invites.action", { defaultValue: "Action" })}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -328,7 +329,7 @@ export function InvitesSection() {
                       <td className="px-5 py-3 align-top">
                         {invite.relatedJoinRequestId ? (
                           <Link to="/inbox/requests" className="underline underline-offset-4">
-                            Review request
+                            {t("access.invites.reviewRequest", { defaultValue: "Review request" })}
                           </Link>
                         ) : (
                           <span className="text-muted-foreground">—</span>
@@ -342,10 +343,10 @@ export function InvitesSection() {
                             onClick={() => revokeMutation.mutate(invite.id)}
                             disabled={revokeMutation.isPending}
                           >
-                            Revoke
+                            {t("access.invites.revoke", { defaultValue: "Revoke" })}
                           </Button>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Inactive</span>
+                          <span className="text-xs text-muted-foreground">{t("access.invites.inactive", { defaultValue: "Inactive" })}</span>
                         )}
                       </td>
                     </tr>
@@ -361,7 +362,7 @@ export function InvitesSection() {
                   onClick={() => invitesQuery.fetchNextPage()}
                   disabled={invitesQuery.isFetchingNextPage}
                 >
-                  {invitesQuery.isFetchingNextPage ? "Loading more…" : "View more"}
+                  {invitesQuery.isFetchingNextPage ? t("access.invites.loadingMore", { defaultValue: "Loading more…" }) : t("access.invites.viewMore", { defaultValue: "View more" })}
                 </Button>
               </div>
             ) : null}

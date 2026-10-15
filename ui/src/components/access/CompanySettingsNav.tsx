@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { PageTabBar } from "@/components/PageTabBar";
 import { Tabs } from "@/components/ui/tabs";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
@@ -99,6 +100,7 @@ export function getCompanySettingsTab(pathname: string): CompanySettingsTab {
 }
 
 export function CompanySettingsNav() {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { hidden: hiddenSettings } = useHiddenSettings();
@@ -123,7 +125,10 @@ export function CompanySettingsNav() {
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange}>
       <PageTabBar
-        items={visibleItems.map(({ value, label }) => ({ value, label }))}
+        items={visibleItems.map(({ value, label }) => ({
+          value,
+          label: t(`access.companySettingsNav.${value.replace("instance-", "")}`, { defaultValue: label }),
+        }))}
         value={activeTab}
         onValueChange={handleTabChange}
         align="start"
