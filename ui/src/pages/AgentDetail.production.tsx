@@ -35,6 +35,7 @@ import { AgentSkillsTab } from "./agent-skills/AgentSkillsTab";
 import { AgentConfigForm } from "../components/AgentConfigForm";
 import { PageTabBar } from "../components/PageTabBar";
 import { adapterLabels, roleLabels, help } from "../components/agent-config-primitives";
+import { t } from "@/i18n";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useAdapterCapabilities } from "@/adapters/use-adapter-capabilities";
 import { redactCommandText as redactCommandSecretText } from "@paperclipai/adapter-utils";
@@ -285,19 +286,19 @@ function scrollToContainerBottom(container: ScrollContainer, behavior: ScrollBeh
 type AgentDetailView = "dashboard" | "instructions" | "configuration" | "secrets" | "skills" | "tools" | "channels" | "runs" | "audit" | "budget";
 
 export const AGENT_DETAIL_TABS: ReadonlyArray<{ value: AgentDetailView; label: string }> = [
-  { value: "dashboard", label: "Dashboard" },
-  { value: "instructions", label: "Instructions" },
-  { value: "skills", label: "Skills" },
-  { value: "configuration", label: "Configuration" },
-  { value: "secrets", label: "Secrets" },
-  { value: "tools", label: "Tools" },
-  { value: "channels", label: "Channels" },
-  { value: "runs", label: "Runs" },
-  { value: "audit", label: "Audit" },
-  { value: "budget", label: "Budget" },
+  { value: "dashboard", label: t("agents.tabs.dashboard", { defaultValue: "Dashboard" }) },
+  { value: "instructions", label: t("agents.tabs.instructions", { defaultValue: "Instructions" }) },
+  { value: "skills", label: t("agents.tabs.skills", { defaultValue: "Skills" }) },
+  { value: "configuration", label: t("agents.tabs.configuration", { defaultValue: "Configuration" }) },
+  { value: "secrets", label: t("agents.tabs.secrets", { defaultValue: "Secrets" }) },
+  { value: "tools", label: t("agents.tabs.tools", { defaultValue: "Tools" }) },
+  { value: "channels", label: t("agents.tabs.channels", { defaultValue: "Channels" }) },
+  { value: "runs", label: t("agents.tabs.runs", { defaultValue: "Runs" }) },
+  { value: "audit", label: t("agents.tabs.audit", { defaultValue: "Audit" }) },
+  { value: "budget", label: t("agents.tabs.budget", { defaultValue: "Budget" }) },
 ];
 
-export const DISCARD_AGENT_CONFIG_CHANGES_MESSAGE = "Discard unsaved agent configuration changes?";
+export const DISCARD_AGENT_CONFIG_CHANGES_MESSAGE = t("agents.discardChanges", { defaultValue: "Discard unsaved agent configuration changes?" });
 
 export function confirmAgentConfigNavigation(
   dirty: boolean,

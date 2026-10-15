@@ -3,6 +3,7 @@ import { useAgentAppearanceDraft } from "@/hooks/useAgentAppearanceDraft";
 import { AdapterMark } from "../AdapterMark";
 import { AgentCharacter } from "../AgentCharacter";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { adaptersApi } from "@/api/adapters";
@@ -48,6 +49,7 @@ export function AgentBasicsDialog({
   initialAdapter?: string;
   onInvite?: () => void;
 }) {
+  const { t } = useTranslation();
   const id = useId();
   const cloud = Boolean(useCloudInstance());
   const experimental = useQuery({
@@ -105,13 +107,13 @@ export function AgentBasicsDialog({
           <span
             className={cn(step === "name" && "font-medium text-foreground")}
           >
-            1. Name
+            {t("agents.newAgentSetup.stepName")}
           </span>
           <ChevronRight className="size-3" />
           <span
             className={cn(step === "adapter" && "font-medium text-foreground")}
           >
-            2. Adapter
+            {t("agents.newAgentSetup.stepAdapter")}
           </span>
         </div>
         <form
@@ -132,26 +134,26 @@ export function AgentBasicsDialog({
               <div className="space-y-2">
                 <DialogTitle className="text-3xl font-semibold tracking-tight">
                   {step === "name"
-                    ? "Meet your next agent"
-                    : "Choose an adapter"}
+                    ? t("agents.newAgentSetup.meetNextAgent")
+                    : t("agents.newAgentSetup.chooseAdapter")}
                 </DialogTitle>
                 <DialogDescription className="text-base">
                   {step === "name"
-                    ? "Start with a name. Make them your own."
-                    : `How should ${name.trim()} work?`}
+                    ? t("agents.newAgentSetup.namePrompt")
+                    : t("agents.newAgentSetup.howShouldWork", { name: name.trim() })}
                 </DialogDescription>
               </div>
             </div>
             {step === "name" ? (
               <div className="space-y-2">
                 <label htmlFor={id} className="text-sm font-medium">
-                  Agent name
+                  {t("agents.newAgentSetup.agentName")}
                 </label>
                 <Input
                   id={id}
                   autoFocus
                   maxLength={100}
-                  placeholder="e.g. Darnold"
+                  placeholder={t("agents.newAgentSetup.agentNamePlaceholder")}
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   className="h-12 text-base"
@@ -163,16 +165,16 @@ export function AgentBasicsDialog({
                     className="px-0 text-muted-foreground"
                     onClick={onInvite}
                   >
-                    Invite an external agent
+                    {t("agents.newAgentSetup.inviteExternal")}
                   </Button>
                 )}
               </div>
             ) : (
               <fieldset className="space-y-4">
-                <legend className="sr-only">Adapter</legend>
+                <legend className="sr-only">{t("agents.adapter")}</legend>
                 {isPending && (
                   <p role="status" className="text-sm text-muted-foreground">
-                    Loading adapters…
+                    {t("agents.newAgentSetup.loadingAdapters")}
                   </p>
                 )}
                 {error && (
@@ -217,9 +219,9 @@ export function AgentBasicsDialog({
                   })}
                 </div>
                 {experimentalRunnerAvailable && <details className="space-y-3">
-                  <summary className="cursor-pointer text-sm text-muted-foreground">Advanced</summary>
+                  <summary className="cursor-pointer text-sm text-muted-foreground">{t("common.advanced", "Advanced")}</summary>
                   <div className="space-y-2">
-                    <label className="text-sm text-muted-foreground">Experimental harness</label>
+                    <label className="text-sm text-muted-foreground">{t("agents.newAgentSetup.runner", "Experimental harness")}</label>
                     <SelectPopover aria-label="Experimental harness"
                       value={adapterType === "paperclip_runner" ? runnerProvider : ""}
                       placeholder="Choose a native harness…"
@@ -242,11 +244,11 @@ export function AgentBasicsDialog({
               onClick={() => (step === "name" ? onClose() : setStep("name"))}
             >
               {step === "name" ? (
-                "Cancel"
+                t("common.cancel")
               ) : (
                 <>
                   <ArrowLeft className="size-4" />
-                  Back
+                  {t("common.back")}
                 </>
               )}
             </Button>
@@ -254,7 +256,7 @@ export function AgentBasicsDialog({
               type="submit"
               disabled={!name.trim() || (step === "adapter" && !validAdapter)}
             >
-              {step === "name" ? "Choose adapter" : "Configure agent"}
+              {step === "name" ? t("agents.newAgentSetup.chooseAdapterBtn") : t("agents.newAgentSetup.configureAgentBtn")}
               <ArrowRight className="size-4" />
             </Button>
           </div>

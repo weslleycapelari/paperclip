@@ -17,6 +17,7 @@ import { testAgentSetup } from "@/lib/test-agent-setup";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { isNewAgentAdapterAllowed } from "@/lib/new-agent-adapters";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { ArrowLeft, ArrowRight, Check, Settings2 } from "lucide-react";
@@ -77,12 +78,13 @@ const blocking = (result: AdapterEnvironmentTestResult) =>
   result.checks.some((check) => check.code === ADAPTER_AUTH_MISSING_CHECK_CODE);
 
 export function NewAgentSetup() {
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const [params] = useSearchParams();
   if (!selectedCompanyId)
     return (
       <p className="text-sm text-muted-foreground">
-        Select an organization to create an agent.
+        {t("agents.newAgentSetup.selectOrgToCreate")}
       </p>
     );
   return (
@@ -116,6 +118,7 @@ function Setup({
   preserveNativeCodex: boolean;
   createdAgentId: string | null;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const cache = useQueryClient();
   const { openNewIssue } = useDialogActions();
@@ -635,9 +638,9 @@ function Setup({
     "saved" as const,
   ];
   const labels = {
-    connect: "Connect",
-    runtime: "Configure",
-    saved: "Confirmation",
+    connect: t("agents.newAgentSetup.stepConnect"),
+    runtime: t("agents.newAgentSetup.stepConfigure"),
+    saved: t("agents.newAgentSetup.stepSaved"),
   };
   const confirmationEnvironment = created?.defaultEnvironmentId
     ? envs.data?.find((env) => env.id === created.defaultEnvironmentId)
@@ -757,7 +760,7 @@ function Setup({
                   <OnboardingCard className="mx-auto">
                     <div className="mb-8">
                       <OnboardingHeading
-                        title="Connect a model"
+                        title={t("agents.newAgentSetup.connectAModel")}
                         center
                       />
                     </div>
@@ -813,9 +816,9 @@ function Setup({
                         setRuntimeAiBinding(undefined);
                         setScreen("runtime");
                       }}
-                    /> : <p role="status" className="text-sm text-muted-foreground">Loading connection settings…</p>}
+                    /> : <p role="status" className="text-sm text-muted-foreground">{t("agents.newAgentSetup.loadingConnectionSettings", "Loading connection settings…")}</p>}
                     {adapterType === "codex_local" && <details className="mt-5 space-y-3">
-                      <summary className="cursor-pointer text-sm text-muted-foreground">Advanced</summary>
+                      <summary className="cursor-pointer text-sm text-muted-foreground">{t("common.advanced", "Advanced")}</summary>
                       <CodexRunnerSelect value={runner} disabled={busy}
                         pending={adapters.isFetching} error={adapters.error?.message} onRetry={() => { void adapters.refetch(); }}
                         defaultRunner={adapters.data?.find(item => item.type === "codex_local")?.defaultRunner}
@@ -829,27 +832,27 @@ function Setup({
                       <h2 className="flex items-center gap-3 text-lg font-semibold">
                         <Check className="size-5" />
                         {created.status === "pending_approval"
-                          ? "Agent submitted for approval"
-                          : isDot ? "Your Dot agent has been created" : "Your agent is ready"}
+                          ? t("agents.newAgentSetup.submittedApproval")
+                          : isDot ? t("agents.newAgentSetup.dotCreated") : t("agents.newAgentSetup.readyTitle")}
                       </h2>
                       <dl className="grid grid-cols-2 gap-4 text-sm">
-                        <dt className="text-muted-foreground">Adapter</dt>
+                        <dt className="text-muted-foreground">{t("agents.adapter")}</dt>
                         <dd>{getAdapterDisplay(isDot ? "openai_dot" : adapterType).label}</dd>
                         {showModel && (
                           <>
-                            <dt className="text-muted-foreground">Model</dt>
+                            <dt className="text-muted-foreground">{t("agents.model")}</dt>
                             <dd className="break-all">
                               {String(confirmationModel)}
                             </dd>
                           </>
                         )}
-                        <dt className="text-muted-foreground">Environment</dt>
+                        <dt className="text-muted-foreground">{t("agents.newAgentSetup.environment")}</dt>
                         <dd>{environmentLabel}</dd>
                       </dl>
                       <p className="text-sm text-muted-foreground">
                         {created.status === "pending_approval"
-                          ? "An organization administrator must approve this agent before it can work."
-                          : isDot ? "Pair your Dot and test event delivery in configuration before assigning work." : "Assign a task when you’re ready for this agent to work."}
+                          ? t("agents.newAgentSetup.approvalNotice")
+                          : isDot ? "Pair your Dot and test event delivery in configuration before assigning work." : t("agents.newAgentSetup.assignTaskNotice")}
                       </p>
                     </div>
                     <div className="flex flex-wrap justify-between gap-3">
@@ -858,7 +861,7 @@ function Setup({
                         onClick={() => navigate(isDot ? "/agents/all" : `${agentUrl(created)}/runtime`)}
                       >
                         <Settings2 className="size-4" />
-                        {isDot ? "Back to Agents" : "Edit configuration"}
+                        {isDot ? t("agents.newAgentSetup.backToAgents") : t("agents.newAgentSetup.editConfig")}
                       </Button>
                       <Button
                         disabled={created.status === "pending_approval"}
@@ -867,7 +870,7 @@ function Setup({
                           : openNewIssue({ assigneeAgentId: created.id, status: "todo" })
                         }
                       >
-                        {isDot ? "Pair Dot" : `Assign ${created.name} a Task`}
+                        {isDot ? t("agents.newAgentSetup.pairDot") : t("agents.newAgentSetup.assignTaskToAgent", { name: created.name })}
                         <ArrowRight className="size-4" />
                       </Button>
                     </div>
@@ -881,7 +884,7 @@ function Setup({
                     }}
                   >
                     <h2 className="text-xl font-semibold">
-                      Configure your agent
+                      {t("agents.newAgentSetup.configureYourAgent")}
                     </h2>
                     <fieldset disabled={busy} className="space-y-8">
                       <section className="space-y-5">
@@ -895,7 +898,7 @@ function Setup({
                           <AiConnectionField companyId={companyId} agentName={name} adapterType={brandType} model={model} environmentId={environmentId ?? undefined} value={aiBinding}
                             onChange={binding => { binding.mode !== "router" && setRuntimeAiBinding(binding); resetTest(); }} />
                         )}
-                        {(connectionModels ? connectionModels.error : models.error) && <p role="alert" className="text-sm text-destructive">Could not load models. Retry or enter a model ID manually.</p>}
+                        {(connectionModels ? connectionModels.error : models.error) && <p role="alert" className="text-sm text-destructive">{t("agents.newAgentSetup.modelsLoadError")}</p>}
                         {((showModel && !usingKimiApi) ||
                           efforts.length > 0) && (
                           <div className="grid items-start gap-5 sm:grid-cols-2">
@@ -938,10 +941,10 @@ function Setup({
                               />
                             )}
                             {efforts.length > 0 && (
-                              <Field label="Thinking effort">
+                              <Field label={t("agents.newAgentSetup.thinkingEffort", "Thinking effort")}>
                                 {brandType === "codex_local" ? <SelectPopover aria-label="Thinking effort" value={effort}
                                   onValueChange={value => { setEffort(value); resetTest(); }}
-                                  options={[{ value: "", label: "Auto" }, ...efforts.map(value => ({ value, label: value }))]} /> : <NativeSelect
+                                  options={[{ value: "", label: t("agents.newAgentSetup.auto", "Auto") }, ...efforts.map(value => ({ value, label: value }))]} /> : <NativeSelect
                                   aria-label="Thinking effort"
                                   value={effort}
                                   onChange={(event) => {
@@ -949,7 +952,7 @@ function Setup({
                                     resetTest();
                                   }}
                                 >
-                                  <option value="">Auto</option>
+                                  <option value="">{t("agents.newAgentSetup.auto")}</option>
                                   {efforts.map((value) => (
                                     <option key={value} value={value}>
                                       {value}
@@ -968,7 +971,7 @@ function Setup({
                         {hasCredentialField && !aiBinding && (
                           <div className="grid gap-5 sm:grid-cols-2">
                             {chooseProvider && (
-                              <Field label="API key provider">
+                              <Field label={t("agents.newAgentSetup.apiKeyProvider")}>
                                 <select
                                   aria-label="API key provider"
                                   className={controlClass}
@@ -1021,13 +1024,13 @@ function Setup({
                                     }}
                                     placeholder={
                                       selectedBinding
-                                        ? "Using saved key"
+                                        ? t("agents.newAgentSetup.savedKeyPlaceholder")
                                         : [
                                               "cursor_cloud",
                                               "hermes_gateway",
                                             ].includes(adapterType)
-                                          ? "Required"
-                                          : "Optional if already configured"
+                                          ? t("agents.newAgentSetup.requiredPlaceholder")
+                                          : t("agents.newAgentSetup.optionalPlaceholder")
                                     }
                                   />
                                   {adapterType === "cursor_cloud" && (
@@ -1037,7 +1040,7 @@ function Setup({
                                       rel="noopener noreferrer"
                                       className="shrink-0 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
                                     >
-                                      get api key
+                                      {t("agents.newAgentSetup.getApiKey")}
                                     </a>
                                   )}
                                 </div>
@@ -1049,7 +1052,7 @@ function Setup({
                                   chooseProvider ? "sm:col-span-2" : undefined
                                 }
                               >
-                                <Field label="Or use an organization secret">
+                                <Field label={t("agents.newAgentSetup.useOrgSecret")}>
                                   <SecretPicker
                                     secretId={
                                       selectedBinding &&
@@ -1074,8 +1077,7 @@ function Setup({
                               </div>
                             )}
                             <p className="text-xs text-muted-foreground sm:col-span-2">
-                              New keys are saved as organization secrets when
-                              you finish setup.
+                              {t("agents.newAgentSetup.newKeysSavedNotice")}
                               {multiProvider && ` Use a ${provider}/model ID.`}
                             </p>
                           </div>
@@ -1178,7 +1180,7 @@ function Setup({
                         adapterType,
                       ) && (
                         <section className="space-y-5">
-                          <h3 className="text-sm font-semibold">Environment</h3>
+                          <h3 className="text-sm font-semibold">{t("agents.newAgentSetup.environment")}</h3>
                           <select
                             aria-label="Environment"
                             className={controlClass}
@@ -1192,7 +1194,7 @@ function Setup({
                             }}
                           >
                             <option value="">
-                              Default: {environmentLabel}
+                              {t("agents.newAgentSetup.defaultEnv", { env: environmentLabel })}
                             </option>
                             {(envs.data ?? [])
                               .filter((env) => env.status === "active" && (!managedOnly || env.driver !== "local"))
@@ -1227,7 +1229,7 @@ function Setup({
                           onClick={editConnection}
                         >
                           <ArrowLeft className="size-4" />
-                          Connection
+                          {t("agents.newAgentSetup.connection")}
                         </Button>
                       ) : (
                         <span />
@@ -1237,7 +1239,7 @@ function Setup({
                         disabled={!ready || busy}
                         onClick={() => setScreen("connect")}
                       >
-                        Connect model
+                        {t("agents.newAgentSetup.connectModel")}
                         <ArrowRight className="size-4" />
                       </Button> : <Button
                         type="submit"
@@ -1248,7 +1250,7 @@ function Setup({
                           Boolean(connectionAdapter && !connection)
                         }
                       >
-                        {saving ? "Creating…" : "Finish setup"}
+                        {saving ? t("agents.newAgentSetup.creating") : t("agents.newAgentSetup.finishSetup")}
                         <Check className="size-4" />
                       </Button>}
                     </div>

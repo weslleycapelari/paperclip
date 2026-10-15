@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
@@ -685,6 +686,7 @@ export function TeamDetailPane({
   fileContent: string | null;
   installed?: InstalledCatalogTeam | null;
 }) {
+  const { t } = useTranslation();
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const tree = useMemo(() => buildTree(team.files), [team.files]);
   const invalid = team.compatibility === "invalid";
@@ -715,7 +717,7 @@ export function TeamDetailPane({
       ) : (
         <Download className="h-4 w-4" />
       )}
-      {isInstalled ? "Re-install latest" : "Install team"}
+      {isInstalled ? t("agents.teams.reinstallLatest") : t("agents.teams.installTeam")}
     </Button>
   );
 
@@ -736,7 +738,7 @@ export function TeamDetailPane({
               <ProvenanceBadge team={team} />
               {isInstalled && !outOfDate && (
                 <Badge variant="secondary" className="gap-1 text-(length:--text-nano)">
-                  <CheckCircle2 className="h-3 w-3" /> Installed
+                  <CheckCircle2 className="h-3 w-3" /> {t("agents.teams.installed")}
                 </Badge>
               )}
               {outOfDate && (
@@ -744,7 +746,7 @@ export function TeamDetailPane({
                   variant="outline"
                   className="gap-1 border-amber-500/40 bg-amber-500/10 text-(length:--text-nano) text-amber-600 dark:text-amber-300"
                 >
-                  <ChevronUp className="h-3 w-3" /> Update available
+                  <ChevronUp className="h-3 w-3" /> {t("agents.teams.updateAvailable")}
                 </Badge>
               )}
             </div>
@@ -754,14 +756,14 @@ export function TeamDetailPane({
               <TooltipTrigger asChild>
                 <span tabIndex={0}>{installButton}</span>
               </TooltipTrigger>
-              <TooltipContent>This team cannot be installed — the package manifest is invalid.</TooltipContent>
+              <TooltipContent>{t("agents.teams.invalidManifest")}</TooltipContent>
             </Tooltip>
           ) : !canInstall ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <span tabIndex={0}>{installButton}</span>
               </TooltipTrigger>
-              <TooltipContent>Requires board operator or agent-create permissions.</TooltipContent>
+              <TooltipContent>{t("agents.teams.permissionRequired")}</TooltipContent>
             </Tooltip>
           ) : (
             installButton
@@ -779,22 +781,22 @@ export function TeamDetailPane({
 
         {/* Summary grid */}
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-          <MetricTile label="Agents" value={team.counts.agents} Icon={Users2} />
-          <MetricTile label="Projects" value={team.counts.projects} Icon={FolderKanban} />
-          <MetricTile label="Routines" value={team.counts.routines} Icon={Repeat} />
-          <MetricTile label="Required skills" value={skillCount(team)} Icon={Boxes} />
+          <MetricTile label={t("agents.teams.agents")} value={team.counts.agents} Icon={Users2} />
+          <MetricTile label={t("agents.teams.projects")} value={team.counts.projects} Icon={FolderKanban} />
+          <MetricTile label={t("agents.teams.routines")} value={team.counts.routines} Icon={Repeat} />
+          <MetricTile label={t("agents.teams.requiredSkills")} value={skillCount(team)} Icon={Boxes} />
         </div>
 
         {/* Agent hierarchy */}
         <div className="space-y-2">
-          <SectionHeader>Agent hierarchy</SectionHeader>
+          <SectionHeader>{t("agents.teams.agentHierarchy")}</SectionHeader>
           <TeamHierarchyPreview team={team} />
         </div>
 
         {/* Projects */}
         {team.projectSlugs.length > 0 && (
           <div className="space-y-2">
-            <SectionHeader>Projects</SectionHeader>
+            <SectionHeader>{t("agents.teams.projects")}</SectionHeader>
             <ul className="space-y-1">
               {team.projectSlugs.map((slug) => (
                 <li key={slug} className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
@@ -809,7 +811,7 @@ export function TeamDetailPane({
 
         {/* Required skills */}
         <div className="space-y-2">
-          <SectionHeader>Required skills</SectionHeader>
+          <SectionHeader>{t("agents.teams.requiredSkills")}</SectionHeader>
           <RequiredSkillsList skills={team.requiredSkills} />
         </div>
 
@@ -821,7 +823,7 @@ export function TeamDetailPane({
 
         {/* File inventory */}
         <div className="space-y-2">
-          <SectionHeader>Files</SectionHeader>
+          <SectionHeader>{t("agents.teams.files")}</SectionHeader>
           <div className="rounded-md border border-border p-1.5">
             <TeamFileTree
               nodes={tree}
@@ -840,7 +842,7 @@ export function TeamDetailPane({
                   className="text-xs text-muted-foreground hover:text-foreground"
                   onClick={() => onSelectFile(null)}
                 >
-                  Close
+                  {t("common.close")}
                 </button>
               </div>
               <div className="max-h-96 overflow-auto p-3">
@@ -1081,6 +1083,7 @@ export function TeamInstallerDialog({
   defaultCollisionStrategy?: CompanyPortabilityCollisionStrategy;
   onInstalled: (result: CatalogTeamInstallResult) => void;
 }) {
+  const { t } = useTranslation();
   const steps = useMemo(() => computeSteps(team), [team]);
   const [stepIndex, setStepIndex] = useState(0);
   const [phase, setPhase] = useState<ApplyPhase>("form");
@@ -1282,14 +1285,14 @@ export function TeamInstallerDialog({
   const headerTitle = (
     <span className="flex items-center gap-2">
       <Users2 className="h-4 w-4" />
-      Install {team.name}
+      {t("agents.teams.installTeamNamed", { name: team.name })}
     </span>
   );
   const headerDescription =
     phase === "form" ? (
       <span className="flex items-center gap-2">
         <span>
-          Step {stepIndex + 1} of {totalSteps} · {STEP_LABELS[currentStep]}
+          {t("agents.teams.stepOf", { current: stepIndex + 1, total: totalSteps })} · {t(`agents.teams.step_${currentStep}`)}
         </span>
         <span className="flex items-center gap-1" aria-hidden>
           {steps.map((s, i) => (
@@ -1369,10 +1372,10 @@ export function TeamInstallerDialog({
             <div role="alert" className="flex items-start gap-2 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2.5 text-sm text-rose-700 dark:text-rose-300">
               <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <div>
-                <p className="font-medium">Install failed</p>
+                <p className="font-medium">{t("agents.teams.installFailed")}</p>
                 <p className="mt-0.5 text-xs">{applyError}</p>
                 <p className="mt-1 text-xs opacity-80">
-                  Partial state is not rolled back. Review the organization activity log before retrying.
+                  {t("agents.teams.partialStateNotRolledBack")}
                 </p>
               </div>
             </div>
@@ -1386,47 +1389,47 @@ export function TeamInstallerDialog({
       <div className="flex items-center justify-between gap-3">
         <div>
           {stepIndex > 0 ? (
-            <Button variant="ghost" onClick={goBack}>Back</Button>
+            <Button variant="ghost" onClick={goBack}>{t("common.back")}</Button>
           ) : (
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button variant="ghost" onClick={onClose}>{t("common.cancel")}</Button>
           )}
         </div>
         <div className="flex items-center gap-3">
           {currentStep === "preview" && hasErrors && (
             <span className="text-xs text-rose-600 dark:text-rose-300">
-              Install blocked: {blockedCount} error{blockedCount === 1 ? "" : "s"}
+              {t("agents.teams.installBlocked", { count: blockedCount })}
             </span>
           )}
           {currentStep === "preview" && !hasErrors && missingRequiredSecretCount > 0 && (
             <span className="text-xs text-rose-600 dark:text-rose-300">
-              Required secrets missing: {missingRequiredSecretCount}
+              {t("agents.teams.requiredSecretsMissing", { count: missingRequiredSecretCount })}
             </span>
           )}
           {currentStep === "preview" && !hasErrors && missingRequiredSecretCount === 0 && missingEnabledAdapter && (
             <span className="text-xs text-rose-600 dark:text-rose-300">
-              Enable a legacy adapter to install this team
+              {t("agents.teams.enableLegacyAdapter")}
             </span>
           )}
           {currentStep === "preview" ? (
             needsScriptsConfirm && confirmScripts ? (
               <Button variant="destructive" onClick={submitInstall} disabled={installBlocked || previewMutation.isPending}>
                 <AlertTriangle className="h-4 w-4" />
-                Confirm — install with executables
+                {t("agents.teams.confirmInstallWithExecutables")}
               </Button>
             ) : (
               <Button onClick={submitInstall} disabled={installBlocked || previewMutation.isPending || !previewResult}>
                 {needsScriptsConfirm ? <AlertTriangle className="h-4 w-4" /> : <Download className="h-4 w-4" />}
-                {needsScriptsConfirm ? "Install with executables" : "Install team"}
+                {needsScriptsConfirm ? t("agents.teams.installWithExecutables") : t("agents.teams.installTeam")}
               </Button>
             )
           ) : (
-            <Button onClick={goNext} disabled={!canContinue(currentStep)}>Continue</Button>
+            <Button onClick={goNext} disabled={!canContinue(currentStep)}>{t("common.continue")}</Button>
           )}
         </div>
       </div>
     ) : phase === "error" ? (
       <div className="flex justify-end">
-        <Button variant="ghost" onClick={onClose}>Close</Button>
+        <Button variant="ghost" onClick={onClose}>{t("common.close")}</Button>
       </div>
     ) : null;
 
@@ -2131,6 +2134,7 @@ export function TeamRow({
   onSelect: () => void;
   installed?: InstalledCatalogTeam | null;
 }) {
+  const { t } = useTranslation();
   const risk = teamRisk(team);
   const outOfDate = Boolean(installed?.outOfDate);
   return (
@@ -2151,13 +2155,13 @@ export function TeamRow({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                aria-label="Update available"
+                aria-label={t("agents.teams.updateAvailable")}
                 className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300"
               >
                 <ChevronUp className="h-3 w-3" />
               </span>
             </TooltipTrigger>
-            <TooltipContent>Update available — installed team is out of date</TooltipContent>
+            <TooltipContent>{t("agents.teams.updateAvailableTooltip")}</TooltipContent>
           </Tooltip>
         )}
         {risk !== "safe" && (
@@ -2165,7 +2169,7 @@ export function TeamRow({
             <TooltipTrigger asChild>
               <AlertTriangle className={cn("ml-auto h-3.5 w-3.5", risk === "blocked" ? "text-rose-500" : "text-amber-500")} />
             </TooltipTrigger>
-            <TooltipContent>Has external sources</TooltipContent>
+            <TooltipContent>{t("agents.teams.hasExternalSources")}</TooltipContent>
           </Tooltip>
         )}
       </div>
@@ -2195,6 +2199,7 @@ export function TeamCard({
   selected?: boolean;
   onSelect?: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
@@ -2216,9 +2221,9 @@ export function TeamCard({
       <div className="space-y-0.5">
         <h3 className="text-sm font-semibold leading-snug">{team.name}</h3>
         <p className="text-xs text-muted-foreground">
-          {team.counts.agents} agent{team.counts.agents === 1 ? "" : "s"} ·{" "}
-          {team.counts.projects} project{team.counts.projects === 1 ? "" : "s"} ·{" "}
-          {team.counts.routines} routine{team.counts.routines === 1 ? "" : "s"}
+          {t("agents.teams.agentCount", { count: team.counts.agents })} ·{" "}
+          {t("agents.teams.projectCount", { count: team.counts.projects })} ·{" "}
+          {t("agents.teams.routineCount", { count: team.counts.routines })}
         </p>
       </div>
 
@@ -2260,6 +2265,7 @@ function matchesSearch(team: CatalogTeam, q: string): boolean {
 export function TeamCatalog() {
   const { "*": routePath } = useParams<{ "*": string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -2291,10 +2297,10 @@ export function TeamCatalog() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Org Chart", href: "/org" },
-      { label: "Teams", href: TEAM_CATALOG_ROUTE_ROOT },
+      { label: t("agents.orgChartView", "Org Chart"), href: "/org" },
+      { label: t("agents.teams.title", "Teams"), href: TEAM_CATALOG_ROUTE_ROOT },
     ]);
-  }, [setBreadcrumbs]);
+  }, [setBreadcrumbs, t]);
 
   const catalogQuery = useQuery({
     queryKey: queryKeys.teamCatalog.catalog({ kind: kindFilter === "all" ? undefined : kindFilter }),
@@ -2388,7 +2394,7 @@ export function TeamCatalog() {
   if (!selectedCompanyId) {
     return (
       <div className="p-8">
-        <EmptyState icon={Users2} message="Select an organization to browse the team catalog." />
+        <EmptyState icon={Users2} message={t("agents.teams.selectOrg")} />
       </div>
     );
   }
@@ -2397,13 +2403,13 @@ export function TeamCatalog() {
     <div className="flex h-full flex-col">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3">
-        <h1 className="text-lg font-semibold">Teams</h1>
+        <h1 className="text-lg font-semibold">{t("agents.teams.title")}</h1>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
             onChange={(e) => setFilterParam("search", e.target.value)}
-            placeholder="Search teams"
+            placeholder={t("agents.teams.searchPlaceholder")}
             className="h-8 w-56 pl-8"
           />
         </div>
@@ -2412,16 +2418,16 @@ export function TeamCatalog() {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-8">
               <Filter className="h-3.5 w-3.5" />
-              {kindFilter === "all" ? "All kinds" : kindFilter === "bundled" ? "Bundled" : "Optional"}
+              {kindFilter === "all" ? t("agents.teams.allKinds") : kindFilter === "bundled" ? t("agents.teams.bundled") : t("agents.teams.optional")}
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuLabel>Kind</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("agents.teams.kind")}</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={kindFilter} onValueChange={(v) => setFilterParam("kind", v)}>
-              <DropdownMenuRadioItem value="all">All kinds</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="bundled">Bundled</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="optional">Optional</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="all">{t("agents.teams.allKinds")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="bundled">{t("agents.teams.bundled")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="optional">{t("agents.teams.optional")}</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -2430,14 +2436,14 @@ export function TeamCatalog() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8">
-                {categoryFilter ? `Category · ${titleCase(categoryFilter)}` : "All categories"}
+                {categoryFilter ? `${t("agents.teams.category")} · ${titleCase(categoryFilter)}` : t("agents.teams.allCategories")}
                 <ChevronDown className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
-              <DropdownMenuLabel>Category</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("agents.teams.category")}</DropdownMenuLabel>
               <DropdownMenuRadioGroup value={categoryFilter} onValueChange={(v) => setFilterParam("category", v)}>
-                <DropdownMenuRadioItem value="">All categories</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="">{t("agents.teams.allCategories")}</DropdownMenuRadioItem>
                 {categories.map((cat) => (
                   <DropdownMenuRadioItem key={cat} value={cat}>{titleCase(cat)}</DropdownMenuRadioItem>
                 ))}
@@ -2449,17 +2455,17 @@ export function TeamCatalog() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-8">
-              {riskFilter === "any" ? "Any risk" : riskFilter === "safe" ? "Safe only" : riskFilter === "has_warnings" ? "Has warnings" : "Blocked"}
+              {riskFilter === "any" ? t("agents.teams.anyRisk") : riskFilter === "safe" ? t("agents.teams.safeOnly") : riskFilter === "has_warnings" ? t("agents.teams.hasWarnings") : t("agents.teams.blocked")}
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuLabel>Risk</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("agents.teams.risk")}</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={riskFilter} onValueChange={(v) => setFilterParam("risk", v)}>
-              <DropdownMenuRadioItem value="any">Any risk</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="safe">Safe only</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="has_warnings">Has warnings</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="blocked">Blocked</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="any">{t("agents.teams.anyRisk")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="safe">{t("agents.teams.safeOnly")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="has_warnings">{t("agents.teams.hasWarnings")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="blocked">{t("agents.teams.blocked")}</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
             {anyFilterActive && (
               <>
@@ -2469,7 +2475,7 @@ export function TeamCatalog() {
                   className="flex w-full items-center gap-1.5 px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
                   onClick={() => setSearchParams(new URLSearchParams())}
                 >
-                  <RotateCcw className="h-3 w-3" /> Reset filters
+                  <RotateCcw className="h-3 w-3" /> {t("agents.teams.resetFilters")}
                 </button>
               </>
             )}
@@ -2478,7 +2484,7 @@ export function TeamCatalog() {
 
         {anyFilterActive && (
           <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setSearchParams(new URLSearchParams())}>
-            Reset filters
+            {t("agents.teams.resetFilters")}
           </Button>
         )}
       </div>
@@ -2500,19 +2506,19 @@ export function TeamCatalog() {
           ) : catalogQuery.isError ? (
             <div className="p-4">
               <div role="alert" className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2.5 text-sm text-rose-700 dark:text-rose-300">
-                Failed to load team catalog.
+                {t("agents.teams.failedToLoad")}
               </div>
               <Button variant="outline" size="sm" className="mt-3" onClick={() => catalogQuery.refetch()}>
-                <RotateCcw className="h-3.5 w-3.5" /> Retry
+                <RotateCcw className="h-3.5 w-3.5" /> {t("common.retry")}
               </Button>
             </div>
           ) : teams.length === 0 ? (
-            <EmptyState icon={Users2} message="No team catalog configured." />
+            <EmptyState icon={Users2} message={t("agents.teams.emptyCatalog")} />
           ) : filtered.length === 0 ? (
             <EmptyState
               icon={Search}
-              message="No teams match this filter."
-              action="Reset filters"
+              message={t("agents.teams.noTeamsMatch")}
+              action={t("agents.teams.resetFilters")}
               onAction={() => setSearchParams(new URLSearchParams())}
             />
           ) : (
@@ -2520,7 +2526,7 @@ export function TeamCatalog() {
               {grouped.bundled.length > 0 && (
                 <>
                   <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                    Bundled · {grouped.bundled.length}
+                    {t("agents.teams.bundled")} · {grouped.bundled.length}
                   </div>
                   {grouped.bundled.map((team) => (
                     <TeamRow
@@ -2535,7 +2541,7 @@ export function TeamCatalog() {
               {grouped.optional.length > 0 && (
                 <>
                   <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                    Optional · {grouped.optional.length}
+                    {t("agents.teams.optional")} · {grouped.optional.length}
                   </div>
                   {grouped.optional.map((team) => (
                     <TeamRow
@@ -2550,7 +2556,7 @@ export function TeamCatalog() {
               {grouped.installed.length > 0 && (
                 <>
                   <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                    Installed · {grouped.installed.length}
+                    {t("agents.teams.installed")} · {grouped.installed.length}
                   </div>
                   {grouped.installed.map((team) => (
                     <TeamRow
@@ -2581,7 +2587,7 @@ export function TeamCatalog() {
                 onClick={() => navigate(withFilters(TEAM_CATALOG_ROUTE_ROOT))}
                 className="flex items-center gap-1.5 border-b border-border px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
               >
-                <ChevronLeft className="h-4 w-4" /> Back to catalog
+                <ChevronLeft className="h-4 w-4" /> {t("agents.teams.backToCatalog")}
               </button>
             )}
             {selectedTeam ? (
@@ -2598,7 +2604,7 @@ export function TeamCatalog() {
               />
             ) : (
               <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-                Select a team to view details.
+                {t("agents.teams.selectToViewDetails")}
               </div>
             )}
           </div>
@@ -2613,7 +2619,7 @@ export function TeamCatalog() {
           open={installOpen}
           onClose={() => setInstallOpen(false)}
           onInstalled={() => {
-            pushToast({ tone: "success", title: "Team installed", body: `${selectedTeam.name} was imported.` });
+            pushToast({ tone: "success", title: t("agents.teams.teamInstalled"), body: t("agents.teams.teamImported", { name: selectedTeam.name }) });
             // Provenance now lives on the new agents — refresh installed/out-of-date state.
             void queryClient.invalidateQueries({
               queryKey: queryKeys.teamCatalog.installed(selectedCompanyId),

@@ -39,6 +39,7 @@ import { AgentSkillsTab } from "./agent-skills/AgentSkillsTab";
 import { AgentConfigForm } from "../components/AgentConfigForm";
 import { agentDisplayAdapterType, getAdapterDisplay } from "../adapters/adapter-display-registry";
 import { adapterLabels, roleLabels, help } from "../components/agent-config-primitives";
+import { useTranslation, t } from "@/i18n";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useAdapterCapabilities } from "@/adapters/use-adapter-capabilities";
 import { redactCommandText as redactCommandSecretText } from "@paperclipai/adapter-utils";
@@ -305,18 +306,18 @@ function scrollToContainerBottom(container: ScrollContainer, behavior: ScrollBeh
 export const AGENT_DETAIL_TABS = AGENT_DETAIL_NAVIGATION.flatMap((section) => section.items);
 
 const LEGACY_AGENT_DETAIL_TABS = [
-  { value: "dashboard", label: "Dashboard" },
-  { value: "instructions", label: "Instructions" },
-  { value: "skills", label: "Skills" },
-  { value: "configuration", label: "Configuration" },
-  { value: "secrets", label: "Secrets" },
-  { value: "tools", label: "Tools" },
-  { value: "runs", label: "Runs" },
-  { value: "audit", label: "Audit" },
-  { value: "budget", label: "Budget" },
+  { value: "dashboard", label: t("agents.tabs.dashboard", { defaultValue: "Dashboard" }) },
+  { value: "instructions", label: t("agents.tabs.instructions", { defaultValue: "Instructions" }) },
+  { value: "skills", label: t("agents.tabs.skills", { defaultValue: "Skills" }) },
+  { value: "configuration", label: t("agents.tabs.configuration", { defaultValue: "Configuration" }) },
+  { value: "secrets", label: t("agents.tabs.secrets", { defaultValue: "Secrets" }) },
+  { value: "tools", label: t("agents.tabs.tools", { defaultValue: "Tools" }) },
+  { value: "runs", label: t("agents.tabs.runs", { defaultValue: "Runs" }) },
+  { value: "audit", label: t("agents.tabs.audit", { defaultValue: "Audit" }) },
+  { value: "budget", label: t("agents.tabs.budget", { defaultValue: "Budget" }) },
 ] as const;
 
-export const DISCARD_AGENT_CONFIG_CHANGES_MESSAGE = "Discard unsaved agent configuration changes?";
+export const DISCARD_AGENT_CONFIG_CHANGES_MESSAGE = t("agents.discardChanges", { defaultValue: "Discard unsaved agent configuration changes?" });
 
 export function confirmAgentConfigNavigation(
   dirty: boolean,
