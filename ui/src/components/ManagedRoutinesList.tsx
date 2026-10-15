@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   RoutineListRow,
@@ -79,7 +80,7 @@ export function ManagedRoutinesList({
   agents = [],
   projects = [],
   pluginDisplayName = null,
-  emptyMessage = "No managed routines.",
+  emptyMessage: initialEmptyMessage,
   runningRoutineKey = null,
   statusMutationRoutineKey = null,
   reconcilingRoutineKey = null,
@@ -89,6 +90,8 @@ export function ManagedRoutinesList({
   onReconcile,
   onReset,
 }: ManagedRoutinesListProps) {
+  const { t } = useTranslation();
+  const emptyMessage = initialEmptyMessage ?? t("routines.managedList.empty", "No managed routines.");
   const agentById = new Map<string, RoutineListAgentSummary>(
     agents.map((agent) => [agent.id, agent]),
   );
@@ -123,8 +126,8 @@ export function ManagedRoutinesList({
               runningRoutineId={runningRoutineKey}
               statusMutationRoutineId={statusMutationRoutineKey}
               href={href}
-              configureLabel="Configure"
-              managedByLabel={managedBy ? `Managed by ${managedBy}` : null}
+              configureLabel={t("routines.managedList.configure", "Configure")}
+              managedByLabel={managedBy ? t("routines.managedList.managedBy", { name: managedBy, defaultValue: `Managed by ${managedBy}` }) : null}
               runNowButton
               hideArchiveAction
               disableRunNow={!canUseRoutine}
@@ -132,7 +135,7 @@ export function ManagedRoutinesList({
               secondaryDetails={
                 <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   {routine.resourceKey ? <span>{routine.resourceKey}</span> : null}
-                  {routine.cronExpression ? <span>Schedule {routine.cronExpression}</span> : null}
+                  {routine.cronExpression ? <span>{t("routines.managedList.schedule", { expr: routine.cronExpression, defaultValue: `Schedule ${routine.cronExpression}` })}</span> : null}
                 </span>
               }
               onRunNow={() => onRunNow?.(routine)}
@@ -148,8 +151,11 @@ export function ManagedRoutinesList({
               >
                 <span>
                   {missingRefs.length
-                    ? `Missing ${missingRefs.map((ref) => `${ref.resourceKind}:${ref.resourceKey}`).join(", ")}`
-                    : "Routine defaults can be repaired."}
+                    ? t("routines.managedList.missingRefs", {
+                        refs: missingRefs.map((ref) => `${ref.resourceKind}:${ref.resourceKey}`).join(", "),
+                        defaultValue: `Missing ${missingRefs.map((ref) => `${ref.resourceKind}:${ref.resourceKey}`).join(", ")}`,
+                      })
+                    : t("routines.managedList.repairedNotice", "Routine defaults can be repaired.")}
                 </span>
                 <span className="flex items-center gap-2">
                   {onReconcile ? (
@@ -159,7 +165,9 @@ export function ManagedRoutinesList({
                       disabled={reconcilingRoutineKey === routine.key}
                       onClick={() => onReconcile(routine)}
                     >
-                      {reconcilingRoutineKey === routine.key ? "Reconciling..." : "Reconcile"}
+                      {reconcilingRoutineKey === routine.key
+                        ? t("routines.managedList.reconciling", "Reconciling...")
+                        : t("routines.managedList.reconcile", "Reconcile")}
                     </Button>
                   ) : null}
                   {onReset ? (
@@ -169,7 +177,9 @@ export function ManagedRoutinesList({
                       disabled={resettingRoutineKey === routine.key}
                       onClick={() => onReset(routine)}
                     >
-                      {resettingRoutineKey === routine.key ? "Resetting..." : "Reset"}
+                      {resettingRoutineKey === routine.key
+                        ? t("routines.managedList.resetting", "Resetting...")
+                        : t("routines.managedList.reset", "Reset")}
                     </Button>
                   ) : null}
                 </span>

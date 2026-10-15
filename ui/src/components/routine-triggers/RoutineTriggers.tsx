@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Plus, Webhook } from "lucide-react";
 import type { RoutineTrigger } from "@paperclipai/shared";
@@ -63,6 +64,7 @@ function scheduleCron(draft: TriggerDraft) {
 }
 
 export function RoutineTriggers() {
+  const { t } = useTranslation();
   const ctx = useRoutineDetail();
   const [params, setParams] = useSearchParams();
   const setupId = params.get("triggerSetup");
@@ -91,7 +93,7 @@ export function RoutineTriggers() {
       setError(
         cause instanceof Error
           ? cause.message
-          : "Couldn’t save the trigger. Please try again.",
+          : t("routines.triggersList.failedToSave", "Couldn’t save the trigger. Please try again."),
       );
     } finally {
       setBusy(false);
@@ -104,18 +106,18 @@ export function RoutineTriggers() {
     if (setupId !== "new" && !trigger)
       return (
         <p role="alert">
-          This trigger is no longer available.{" "}
+          {t("routines.triggersList.noLongerAvailable", "This trigger is no longer available.")}{" "}
           <Button variant="link" onClick={closeSetup}>
-            Back to triggers
+            {t("routines.triggersList.backToTriggers", "Back to triggers")}
           </Button>
         </p>
       );
     if (trigger && !trigger.setupPending)
       return (
         <p>
-          This trigger is ready.{" "}
+          {t("routines.triggersList.ready", "This trigger is ready.")}{" "}
           <Button variant="link" onClick={closeSetup}>
-            Back to triggers
+            {t("routines.triggersList.backToTriggers", "Back to triggers")}
           </Button>
         </p>
       );
@@ -123,7 +125,7 @@ export function RoutineTriggers() {
       <div className="space-y-4">
         {statusError && (
           <p role="alert" className="text-sm text-destructive">
-            Connection status is unavailable. Retrying…
+            {t("routines.triggersList.connectionUnavailable", "Connection status is unavailable. Retrying…")}
           </p>
         )}
         <TriggerSetup
@@ -143,68 +145,72 @@ export function RoutineTriggers() {
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           {routine.triggers.length}{" "}
-          {routine.triggers.length === 1 ? "trigger" : "triggers"}
+          {routine.triggers.length === 1
+            ? t("routines.triggersList.count_one", { count: 1, defaultValue: "trigger" })
+            : t("routines.triggersList.count_other", { count: routine.triggers.length, defaultValue: "triggers" })}
         </p>
         <Button size="sm" onClick={() => startSetup("new")}>
           <Plus className="mr-1.5 h-3.5 w-3.5" />
-          Add trigger
+          {t("routines.triggersList.addTrigger", "Add trigger")}
         </Button>
       </div>
       {(error || statusError) && (
         <p role="alert" className="text-sm text-destructive">
-          {error || "Connection status is unavailable. Retrying…"}
+          {error || t("routines.triggersList.connectionUnavailable", "Connection status is unavailable. Retrying…")}
         </p>
       )}
-      {removed.map((trigger) => (
-        <div
-          key={trigger.id}
-          role="status"
-          className="flex items-center gap-3 rounded-md bg-muted/40 px-4 py-3 text-sm"
-        >
-          <span className="flex-1">
-            {trigger.kind === "schedule"
-              ? "Schedule"
-              : trigger.kind === "api"
-                ? "API trigger"
-                : "Webhook"}{" "}
-            removed.
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={busy}
-            onClick={() =>
-              void change(async () => {
-                await routinesApi.updateTrigger(trigger.id, {
-                  archived: false,
-                });
-                setRemoved((items) =>
-                  items.filter((item) => item.id !== trigger.id),
-                );
-              })
-            }
+      {removed.map((trigger) => {
+        const kindLabel = trigger.kind === "schedule"
+          ? t("routines.triggersList.kinds.schedule", "Schedule")
+          : trigger.kind === "api"
+            ? t("routines.triggersList.kinds.api", "API trigger")
+            : t("routines.triggersList.kinds.webhook", "Webhook");
+        return (
+          <div
+            key={trigger.id}
+            role="status"
+            className="flex items-center gap-3 rounded-md bg-muted/40 px-4 py-3 text-sm"
           >
-            Undo
-          </Button>
-        </div>
-      ))}
+            <span className="flex-1">
+              {t("routines.triggersList.removed", { kind: kindLabel, defaultValue: `${kindLabel} removed.` })}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={busy}
+              onClick={() =>
+                void change(async () => {
+                  await routinesApi.updateTrigger(trigger.id, {
+                    archived: false,
+                  });
+                  setRemoved((items) =>
+                    items.filter((item) => item.id !== trigger.id),
+                  );
+                })
+              }
+            >
+              {t("routines.triggersList.undo", "Undo")}
+            </Button>
+          </div>
+        );
+      })}
       {ctx.secretMessage && (
         <div className="space-y-3 rounded-md border p-4">
           <p className="text-sm font-medium">{ctx.secretMessage.title}</p>
           {ctx.secretMessage.entries.map((entry) => (
             <div key={entry.webhookUrl} className="space-y-3">
-              <CopyField label="Webhook URL" value={entry.webhookUrl} />
-              <CopyField label="Secret key" value={entry.webhookSecret} />
+              <CopyField label={t("routines.triggersList.webhookUrl", "Webhook URL")} value={entry.webhookUrl} />
+              <CopyField label={t("routines.triggersList.secretKey", "Secret key")} value={entry.webhookSecret} />
             </div>
           ))}
           <Button variant="outline" onClick={() => ctx.setSecretMessage(null)}>
-            Done
+            {t("routines.triggersList.done", "Done")}
           </Button>
         </div>
       )}
       {routine.triggers.length === 0 && (
         <p className="py-6 text-sm text-muted-foreground">
-          Run this routine on a schedule or when another app sends a webhook.
+          {t("routines.triggersList.empty", "Run this routine on a schedule or when another app sends a webhook.")}
         </p>
       )}
       <fieldset disabled={busy} className="min-w-0 space-y-3">
@@ -227,31 +233,31 @@ export function RoutineTriggers() {
             }
             title={
               trigger.kind === "schedule"
-                ? (describeCron(trigger.cronExpression) ?? "Schedule")
+                ? (describeCron(trigger.cronExpression) ?? t("routines.triggersList.kinds.schedule", "Schedule"))
                 : trigger.kind === "api"
-                  ? "API trigger"
+                  ? t("routines.triggersList.kinds.api", "API trigger")
                   : trigger.signingMode === "github_hmac"
-                    ? "GitHub webhook"
-                    : "Webhook"
+                    ? t("routines.triggersList.kinds.github", "GitHub webhook")
+                    : t("routines.triggersList.kinds.webhook", "Webhook")
             }
             summary={
               trigger.setupPending
-                ? "Setup unfinished · Events only test the connection"
+                ? t("routines.triggersList.triggerSummarySetupPending", "Setup unfinished · Events only test the connection")
                 : !trigger.enabled
-                  ? "Paused"
+                  ? t("routines.triggersList.triggerSummaryPaused", "Paused")
                   : trigger.kind === "schedule"
                     ? (trigger.timezone ?? "UTC")
                     : trigger.kind === "api"
-                      ? "Run through the API"
+                      ? t("routines.triggersList.triggerSummaryApi", "Run through the API")
                       : trigger.lastWebhookDelivery?.status === "rejected"
-                        ? "Authentication failed · Check the key in your app"
+                        ? t("routines.triggersList.triggerSummaryAuthFailed", "Authentication failed · Check the key in your app")
                         : trigger.lastWebhookDelivery?.status === "received" &&
                             !trigger.lastWebhookDelivery.test
-                          ? "Receiving events"
-                          : "Ready · Waiting for an event"
+                          ? t("routines.triggersList.triggerSummaryReceiving", "Receiving events")
+                          : t("routines.triggersList.triggerSummaryReady", "Ready · Waiting for an event")
             }
             expanded={expanded === trigger.id}
-            editLabel={trigger.setupPending ? "Resume setup" : undefined}
+            editLabel={trigger.setupPending ? t("routines.triggersList.resumeSetup", "Resume setup") : undefined}
             onEdit={() =>
               trigger.setupPending
                 ? startSetup(trigger.id)
@@ -266,7 +272,7 @@ export function RoutineTriggers() {
           >
             {trigger.setupPending ? (
               <Button onClick={() => startSetup(trigger.id)}>
-                Resume setup
+                {t("routines.triggersList.resumeSetup", "Resume setup")}
               </Button>
             ) : trigger.kind === "schedule" ? (
               <ScheduleSettings
@@ -280,7 +286,7 @@ export function RoutineTriggers() {
               />
             ) : trigger.kind === "api" ? (
               <p className="text-sm text-muted-foreground">
-                This trigger starts the routine through the API.
+                {t("routines.triggersList.apiRunsThrough", "This trigger starts the routine through the API.")}
               </p>
             ) : (
               <WebhookSettings
@@ -301,7 +307,7 @@ export function RoutineTriggers() {
                   })
                 }
               >
-                {trigger.enabled ? "Pause trigger" : "Enable trigger"}
+                {trigger.enabled ? t("routines.triggersList.pauseTrigger", "Pause trigger") : t("routines.triggersList.enableTrigger", "Enable trigger")}
               </Button>
             )}
           </RoutineTriggerCard>

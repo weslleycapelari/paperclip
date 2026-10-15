@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { History as HistoryIcon, RotateCcw, Search } from "lucide-react";
 import type {
@@ -71,6 +72,7 @@ export function RoutineHistoryTab({
   onRestoreSecretMaterials,
   onRestored,
 }: Props) {
+  const { t } = useTranslation();
   const secretLookup = useMemo<SecretLookup>(
     () => new Map((secrets ?? []).map((secret) => [secret.id, secret])),
     [secrets],
@@ -124,7 +126,11 @@ export function RoutineHistoryTab({
       const restoredFromNumber = data.restoredFromRevisionNumber;
       const newNumber = data.revision.revisionNumber;
       pushToast({
-        title: `Restored revision ${restoredFromNumber} as revision ${newNumber}`,
+        title: t("routines.history.restoredTitle", {
+          oldNumber: restoredFromNumber ?? "?",
+          newNumber,
+          defaultValue: `Restored revision ${restoredFromNumber} as revision ${newNumber}`,
+        }),
         body: data.secretMaterials.length > 0
           ? "Trigger enabled state was restored from the snapshot. New webhook secrets are available in the banner above."
           : "Trigger enabled state was restored from the snapshot.",
@@ -200,7 +206,7 @@ export function RoutineHistoryTab({
     return (
       <div className="rounded-md border border-l-2 border-l-destructive border-border p-4 space-y-3">
         <div>
-          <p className="text-sm font-medium">Could not load revisions</p>
+          <p className="text-sm font-medium">{t("routines.history.couldNotLoad", "Could not load revisions")}</p>
           <p className="text-xs text-muted-foreground">
             {revisionsQuery.error instanceof Error
               ? revisionsQuery.error.message
@@ -208,7 +214,7 @@ export function RoutineHistoryTab({
           </p>
         </div>
         <Button size="sm" variant="outline" onClick={() => revisionsQuery.refetch()}>
-          Retry
+          {t("routines.history.retry", "Retry")}
         </Button>
       </div>
     );
@@ -241,11 +247,10 @@ export function RoutineHistoryTab({
           <div className="space-y-2">
             <EmptyState
               icon={HistoryIcon}
-              message="No edits yet"
+              message={t("routines.history.noEditsYet", "No edits yet")}
             />
             <p className="text-center text-xs text-muted-foreground">
-              Revision 1 is the only history this routine has. Saving an edit creates the first
-              additional revision.
+              {t("routines.history.onlyBootstrapRevision", "Revision 1 is the only history this routine has. Saving an edit creates the first additional revision.")}
             </p>
           </div>
         ) : (
@@ -332,25 +337,31 @@ function HistoricalPreviewBanner({
   onRestore: () => void;
   pending: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-            Viewing revision {revisionNumber} (read-only)
+            {t("routines.history.viewingReadOnly", {
+              number: revisionNumber,
+              defaultValue: `Viewing revision ${revisionNumber} (read-only)`,
+            })}
           </p>
           <p className="text-xs text-muted-foreground">
-            Restoring this revision creates a new revision {nextRevisionNumber} with the same content.
-            History stays append-only.
+            {t("routines.history.restoreDialogDescription", {
+              number: nextRevisionNumber,
+              defaultValue: `Restoring this revision creates a new revision ${nextRevisionNumber} with the same content. History stays append-only.`,
+            })}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={onReturn} disabled={pending}>
-            Return to current
+            {t("routines.history.returnToCurrent", "Return to current")}
           </Button>
           <Button size="sm" onClick={onRestore} disabled={pending}>
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-            Restore as new revision
+            {t("routines.history.restoreAsNew", "Restore as new revision")}
           </Button>
         </div>
       </div>
@@ -367,6 +378,7 @@ function ConflictBanner({
   onDiscard: () => void;
   onSave: () => void;
 }) {
+  const { t } = useTranslation();
   const labels = dirtyFields.length > 0
     ? dirtyFields.map((field) => field.label)
     : ["the routine"];
@@ -375,18 +387,22 @@ function ConflictBanner({
     <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
-          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Unsaved routine edits</p>
+          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+            {t("routines.history.unsavedEdits", "Unsaved routine edits")}
+          </p>
           <p className="text-xs text-muted-foreground">
-            You changed {fieldsText} but haven&apos;t saved yet. Save or discard before previewing or
-            restoring an older revision.
+            {t("routines.history.unsavedEditsDesc", {
+              fields: fieldsText,
+              defaultValue: `You changed ${fieldsText} but haven't saved yet. Save or discard before previewing or restoring an older revision.`,
+            })}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={onDiscard}>
-            Discard changes
+            {t("routines.history.discardChanges", "Discard changes")}
           </Button>
           <Button size="sm" onClick={onSave}>
-            Save and continue
+            {t("routines.history.saveAndContinue", "Save and continue")}
           </Button>
         </div>
       </div>
@@ -425,13 +441,14 @@ function RevisionList({
   onShowOlder: () => void;
   showOlder: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <aside className="space-y-1">
       <header className="flex items-center justify-between pb-2">
         <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Revisions
+          {t("routines.history.revisionsHeader", "Revisions")}
         </p>
-        <span className="text-(length:--text-micro) text-muted-foreground">{totalRevisions} total</span>
+        <span className="text-(length:--text-micro) text-muted-foreground">{t("routines.history.totalCount", { count: totalRevisions, defaultValue: `${totalRevisions} total` })}</span>
       </header>
       {revisions.map((revision) => {
         const isSelected = revision.id === selectedRevisionId;
@@ -459,15 +476,15 @@ function RevisionList({
             data-testid={`revision-row-${revision.revisionNumber}`}
           >
             <div className="flex items-center gap-2 text-sm font-medium">
-              <span>rev {revision.revisionNumber}</span>
+              <span>{t("routines.history.revision", { number: revision.revisionNumber, defaultValue: `rev ${revision.revisionNumber}` })}</span>
               {isCurrent && (
                 <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                  Current
+                  {t("routines.history.current", "Current")}
                 </Badge>
               )}
               {revision.restoredFromRevisionId && (
                 <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:text-amber-200">
-                  Restored
+                  {t("routines.history.restoredBadge", "Restored")}
                 </Badge>
               )}
             </div>
@@ -480,7 +497,7 @@ function RevisionList({
       })}
       {totalRevisions > revisions.length && !showOlder && (
         <Button variant="ghost" size="sm" className="w-full" onClick={onShowOlder}>
-          Show {totalRevisions - revisions.length} older…
+          {t("routines.history.showOlder", { count: totalRevisions - revisions.length, defaultValue: `Show ${totalRevisions - revisions.length} older…` })}
         </Button>
       )}
     </aside>
@@ -508,15 +525,16 @@ function RevisionPreview({
   restorePending: boolean;
   highlighted: boolean;
 }) {
+  const { t } = useTranslation();
   const snapshot = revision.snapshot.routine;
   const triggers = revision.snapshot.triggers;
   const currentSnapshot = currentRevision?.snapshot.routine ?? null;
-  const restoreLabel = isHistorical ? "Restore this revision" : "Restore this revision";
+  const restoreLabel = t("routines.history.restoreAsNew", "Restore as new revision");
   const cardWrapper = `rounded-md border transition-colors duration-1000 ${
     highlighted ? "border-emerald-500/40 bg-emerald-500/10" : "border-border"
   }`;
 
-  const envSummary = summarizeEnv(snapshot.env ?? null);
+  const envSummary = summarizeEnv(snapshot.env ?? null, t);
   const envDiffers = !!currentSnapshot
     && JSON.stringify(normalizeEnv(currentSnapshot.env ?? null))
       !== JSON.stringify(normalizeEnv(snapshot.env ?? null));
@@ -535,7 +553,7 @@ function RevisionPreview({
     },
     {
       key: "status",
-      label: "Status",
+      label: t("routines.history.status", "Status"),
       value: snapshot.status,
       differs: !!currentSnapshot && currentSnapshot.status !== snapshot.status,
     },
@@ -585,7 +603,7 @@ function RevisionPreview({
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={onCompare}>
               <Search className="mr-1.5 h-3.5 w-3.5" />
-              Compare with current
+              {t("routines.history.compareWithCurrent", "Compare with current")}
             </Button>
             <Button
               size="sm"
@@ -603,7 +621,7 @@ function RevisionPreview({
 
       <div className={`${cardWrapper} p-3`}>
         <p className="pb-2 text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Structured fields
+          {t("routines.history.structuredFields", "Structured fields")}
         </p>
         <div className="grid gap-3 md:grid-cols-2 divide-y md:divide-y-0 divide-border">
           {fieldRows.map((row) => (
@@ -613,7 +631,7 @@ function RevisionPreview({
                 {row.value || <span className="text-muted-foreground">—</span>}
                 {row.differs && (
                   <Badge variant="outline" className="ml-2 border-amber-500/40 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:text-amber-200">
-                    differs from current
+                    {t("routines.history.differsFromCurrent", "differs from current")}
                   </Badge>
                 )}
               </p>
@@ -630,17 +648,17 @@ function RevisionPreview({
           {snapshot.description ? (
             <MarkdownBody>{snapshot.description}</MarkdownBody>
           ) : (
-            <span className="text-muted-foreground">No description</span>
+            <span className="text-muted-foreground">{t("routines.history.noDescription", "No description")}</span>
           )}
         </div>
       </div>
 
       <div className={`${cardWrapper} p-3 space-y-2`}>
         <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Triggers ({triggers.length})
+          {t("routines.history.triggersCount", { count: triggers.length, defaultValue: `Triggers (${triggers.length})` })}
         </p>
         {triggers.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No triggers in this revision.</p>
+          <p className="text-sm text-muted-foreground">{t("routines.history.noTriggersInRevision", "No triggers in this revision.")}</p>
         ) : (
           <ul className="divide-y divide-border">
             {triggers.map((trigger) => (
@@ -712,58 +730,64 @@ function RestoreConfirmDialog({
   envDiffCounts: EnvDiffCounts;
 }) {
   const newRevisionNumber = currentRevisionNumber + 1;
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Restore revision {target.revisionNumber}?</DialogTitle>
+          <DialogTitle>{t("routines.history.restoreConfirmTitle", { number: target.revisionNumber, defaultValue: `Restore revision ${target.revisionNumber}?` })}</DialogTitle>
           <DialogDescription>
-            This creates a new revision {newRevisionNumber} with the same content as revision{" "}
-            {target.revisionNumber}. Revisions {target.revisionNumber}–{currentRevisionNumber} stay
-            in history and are not modified.
+            {t("routines.history.restoreConfirmDesc", {
+              newNumber: newRevisionNumber,
+              targetNumber: target.revisionNumber,
+              currentNumber: currentRevisionNumber,
+              defaultValue: `This creates a new revision ${newRevisionNumber} with the same content as revision ${target.revisionNumber}. Revisions ${target.revisionNumber}–${currentRevisionNumber} stay in history and are not modified.`,
+            })}
           </DialogDescription>
         </DialogHeader>
         <ul className="space-y-2 text-sm">
           <li className="flex items-start gap-2">
             <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Routine field values, variables, and schedule cron will revert.
+            {t("routines.history.restorePoint1", "Routine field values, variables, and schedule cron will revert.")}
           </li>
           {envDiffCounts.total > 0 && (
             <li className="flex items-start gap-2">
               <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              Routine secrets will revert: {formatEnvDiffCounts(envDiffCounts)}.
+              {t("routines.history.secretsWillRevert", "Routine secrets will revert")}: {formatEnvDiffCounts(envDiffCounts, t)}.
             </li>
           )}
           <li className="flex items-start gap-2">
             <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Previous run history is preserved.
+            {t("routines.history.restorePoint2", "Previous run history is preserved.")}
           </li>
           {recreatedWebhookLabels.map((label) => (
             <li key={label} className="flex items-start gap-2 text-amber-800 dark:text-amber-200">
               <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
-              The webhook trigger {label} will be recreated with a new URL and secret. Paperclip will
-              show the secret once after restore — copy it before closing.
+              {t("routines.history.restoreWebhookWarning", {
+                label,
+                defaultValue: `The webhook trigger ${label} will be recreated with a new URL and secret. Paperclip will show the secret once after restore — copy it before closing.`,
+              })}
             </li>
           ))}
         </ul>
         <div className="space-y-1.5">
           <Label htmlFor="restore-change-summary" className="text-xs">
-            Change summary (optional)
+            {t("routines.history.changeSummaryLabel", "Change summary (optional)")}
           </Label>
           <Input
             id="restore-change-summary"
             value={changeSummary}
-            placeholder="Why are you restoring? Visible in history."
+            placeholder={t("routines.history.changeSummaryPlaceholder", "Why are you restoring? Visible in history.")}
             onChange={(event) => onChangeSummaryChange(event.target.value)}
           />
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
-            Cancel
+            {t("routines.history.cancel", "Cancel")}
           </Button>
           <Button onClick={onConfirm} disabled={pending}>
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-            {pending ? "Restoring…" : `Restore as revision ${newRevisionNumber}`}
+            {pending ? t("routines.history.restoring", "Restoring…") : t("routines.history.restoreDialogTitle", { number: newRevisionNumber, defaultValue: `Restore as revision ${newRevisionNumber}` })}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -792,6 +816,7 @@ function RoutineRevisionDiffModal({
   secrets: SecretLookup;
   onRestore: (revision: RoutineRevision) => void;
 }) {
+  const { t } = useTranslation();
   const [leftId, setLeftId] = useState<string>(initialOldRevisionId);
   const [rightId, setRightId] = useState<string>(initialNewRevisionId);
 
@@ -821,18 +846,18 @@ function RoutineRevisionDiffModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="!max-w-(--pct-90) w-full max-h-(--sz-85vh) overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Compare routine revisions</DialogTitle>
+          <DialogTitle>{t("routines.history.compareRevisionsTitle", "Compare routine revisions")}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-wrap items-center gap-3">
           <RevisionPicker
-            label="Old"
+            label={t("routines.history.diffOld", "Old")}
             value={leftId}
             onChange={setLeftId}
             revisions={revisions}
             tone="red"
           />
           <RevisionPicker
-            label="New"
+            label={t("routines.history.diffNew", "New")}
             value={rightId}
             onChange={setRightId}
             revisions={revisions}
@@ -842,17 +867,17 @@ function RoutineRevisionDiffModal({
         <div className="overflow-auto flex-1 space-y-4">
           <section className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-              Field changes
+              {t("routines.history.fieldChanges", "Field changes")}
             </p>
             {fieldChanges.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No structural field changes.</p>
+              <p className="text-sm text-muted-foreground">{t("routines.history.noStructuralFieldChanges", "No structural field changes.")}</p>
             ) : (
               <table className="w-full text-sm border border-border rounded-md overflow-hidden">
                 <thead>
                   <tr className="text-xs uppercase tracking-wide bg-muted/30 text-muted-foreground">
-                    <th className="px-3 py-2 text-left">Field</th>
-                    <th className="px-3 py-2 text-left">Old value</th>
-                    <th className="px-3 py-2 text-left">New value</th>
+                    <th className="px-3 py-2 text-left">{t("routines.history.colField", "Field")}</th>
+                    <th className="px-3 py-2 text-left">{t("routines.history.colOldValue", "Old value")}</th>
+                    <th className="px-3 py-2 text-left">{t("routines.history.colNewValue", "New value")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -873,19 +898,19 @@ function RoutineRevisionDiffModal({
           </section>
           <section className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-              Description diff
+              {t("routines.history.descriptionDiff", "Description diff")}
             </p>
             <DiffTable rows={descriptionDiff} />
           </section>
         </div>
         <DialogFooter className="justify-between sm:justify-between">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            {t("routines.history.close", "Close")}
           </Button>
           {leftIsHistorical && left && (
             <Button onClick={() => onRestore(left)}>
               <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-              Restore rev {left.revisionNumber} as new revision
+              {t("routines.history.restoreDiffButton", { number: left.revisionNumber, defaultValue: `Restore rev ${left.revisionNumber} as new revision` })}
             </Button>
           )}
         </DialogFooter>
@@ -934,11 +959,12 @@ function RevisionPicker({
 }
 
 function DiffTable({ rows }: { rows: DiffRow[] }) {
+  const { t } = useTranslation();
   if (rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">No description on either revision.</p>;
+    return <p className="text-sm text-muted-foreground">{t("routines.history.noDescriptionEither", "No description on either revision.")}</p>;
   }
   if (rows.every((row) => row.kind === "context")) {
-    return <p className="text-sm text-muted-foreground">Descriptions are identical.</p>;
+    return <p className="text-sm text-muted-foreground">{t("routines.history.descriptionsIdentical", "Descriptions are identical.")}</p>;
   }
   const lineClassesByKind: Record<DiffRow["kind"], string> = {
     context: "bg-transparent",
@@ -953,10 +979,10 @@ function DiffTable({ rows }: { rows: DiffRow[] }) {
   return (
     <div className="rounded-md border border-border text-xs font-mono leading-6 overflow-hidden">
       <div className="grid grid-cols-(--gtc-1) border-b border-border/60 bg-muted/30 px-3 py-2 text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
-        <span>Old</span>
-        <span>New</span>
+        <span>{t("routines.history.diffOld", "Old")}</span>
+        <span>{t("routines.history.diffNew", "New")}</span>
         <span />
-        <span>Content</span>
+        <span>{t("routines.history.diffContent", "Content")}</span>
       </div>
       {rows.map((row, index) => (
         <div
@@ -1125,13 +1151,21 @@ function describeEnvBinding(binding: EnvBinding | undefined, secrets: SecretLook
   return "plain (set)";
 }
 
-function summarizeEnv(env: RoutineEnvConfig | null): string {
+function summarizeEnv(
+  env: RoutineEnvConfig | null,
+  t?: any,
+): string {
   const entries = Object.entries(normalizeEnv(env));
   if (entries.length === 0) return "";
   const secretCount = entries.filter(([, binding]) => envBindingKind(binding) === "secret_ref").length;
-  const keyLabel = entries.length === 1 ? "key" : "keys";
+  const keyLabel = entries.length === 1
+    ? (t ? t("routines.history.keySingular", "key") : "key")
+    : (t ? t("routines.history.keyPlural", "keys") : "keys");
   if (secretCount === 0) return `${entries.length} ${keyLabel}`;
-  return `${entries.length} ${keyLabel} (${secretCount} secret ${secretCount === 1 ? "ref" : "refs"})`;
+  const refLabel = secretCount === 1
+    ? (t ? t("routines.history.secretRefSingular", "secret ref") : "secret ref")
+    : (t ? t("routines.history.secretRefPlural", "secret refs") : "secret refs");
+  return `${entries.length} ${keyLabel} (${secretCount} ${refLabel})`;
 }
 
 type EnvDiffCounts = {
@@ -1169,11 +1203,41 @@ function summarizeEnvDiffCounts(
   return { added, removed, changed, total: added + removed + changed };
 }
 
-function formatEnvDiffCounts(counts: EnvDiffCounts): string {
+function formatEnvDiffCounts(
+  counts: EnvDiffCounts,
+  t?: any,
+): string {
   const parts: string[] = [];
-  if (counts.added > 0) parts.push(`${counts.added} ${counts.added === 1 ? "key" : "keys"} added`);
-  if (counts.removed > 0) parts.push(`${counts.removed} ${counts.removed === 1 ? "key" : "keys"} removed`);
-  if (counts.changed > 0) parts.push(`${counts.changed} ${counts.changed === 1 ? "key" : "keys"} changed`);
+  if (counts.added > 0) {
+    parts.push(
+      t
+        ? t("routines.history.envAdded", {
+            count: counts.added,
+            defaultValue: `${counts.added} ${counts.added === 1 ? "key" : "keys"} added`,
+          })
+        : `${counts.added} ${counts.added === 1 ? "key" : "keys"} added`,
+    );
+  }
+  if (counts.removed > 0) {
+    parts.push(
+      t
+        ? t("routines.history.envRemoved", {
+            count: counts.removed,
+            defaultValue: `${counts.removed} ${counts.removed === 1 ? "key" : "keys"} removed`,
+          })
+        : `${counts.removed} ${counts.removed === 1 ? "key" : "keys"} removed`,
+    );
+  }
+  if (counts.changed > 0) {
+    parts.push(
+      t
+        ? t("routines.history.envChanged", {
+            count: counts.changed,
+            defaultValue: `${counts.changed} ${counts.changed === 1 ? "key" : "keys"} changed`,
+          })
+        : `${counts.changed} ${counts.changed === 1 ? "key" : "keys"} changed`,
+    );
+  }
   return parts.join(", ");
 }
 
