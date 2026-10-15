@@ -56,7 +56,7 @@ export async function agentExecutionsHaveStopped(db: Db, agentIds: string[]) {
         !await isCancelledNativeStartup(db, run, coordinators.find(row => row.runId === run.id))) return false;
     if (run.runtimeMode === "legacy" && !run.processPid && !run.processGroupId &&
         (run.resultJson?.executionCancellation as Record<string, unknown> | undefined)?.state !== "acknowledged" &&
-        !(run.executionStage === "settled" && !await runUsedConversationAdapter(db, run)) &&
+        !(run.executionStage === "settled" && (!await runUsedConversationAdapter(db, run) || !run.processStartedAt || Boolean(run.resultJson?.startupCancellation))) &&
         !await isCancelledNativeStartup(db, run, coordinators.find(row => row.runId === run.id))) return false;
   }
   // Release an expired owner only after its cancelled execution has stop proof.

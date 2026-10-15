@@ -180,6 +180,23 @@ const support = await getEmbeddedPostgresTestSupport();
     expect((await current(agent.id)).lifecycleState).toBe("terminated");
   });
 
+  it("advances pause when a legacy run was cancelled during startup before process spawn", async () => {
+    const agent = await hire();
+    await db.insert(heartbeatRuns).values({
+      companyId, agentId: agent.id,
+      status: "cancelled", invocationSource: "on_demand", runtimeMode: "legacy",
+      startedAt: new Date(), finishedAt: new Date(), processPid: null, processGroupId: null,
+      executionStage: "settled",
+      runnerProfileJson: { adapterDispatch: { adapterType: "claude_local" } },
+      resultJson: { startupCancellation: { requestedAt: new Date().toISOString(), beforeNativeSelection: false } },
+    });
+    const driver = createLifecycleDriver(db, {} as never);
+    const work = worker(driver.runHost);
+    await createAgentLifecycle(db).pauseAgent(agent.id);
+    await work.process(agent.id);
+    expect((await current(agent.id)).lifecycleState).toBe("paused");
+  });
+
   it("does not cancel a reporting agent when its manager pauses", async () => {
     const parent = await hire();
     const [child] = await db.insert(agents).values({ companyId, name: "Report", reportsTo: parent.id,

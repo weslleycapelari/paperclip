@@ -204,7 +204,10 @@ export async function admitExplicitNativeContinuation(input: {
       return blocked("workspace_repair_required", "Verify safe workspace staging or repair before continuing. Your message is saved.");
     }
     const cancelledStartup = await isCancelledNativeStartup(db, run, coordinator);
-    if (partiallyDeliveredQueue && run.runtimeMode !== "native" && !unusedAdmission && !cancelledStartup) return null;
+    const cancelledBeforeProcess = run.status === "cancelled" &&
+      !run.processPid && !run.processGroupId &&
+      (!run.processStartedAt || Boolean(run.resultJson?.startupCancellation));
+    if (partiallyDeliveredQueue && run.runtimeMode !== "native" && !unusedAdmission && !cancelledStartup && !legacyUserTurn && !cancelledBeforeProcess) return null;
     if ((queuedInterrupt || queuedRequest) && !legacyUserTurn && !unusedAdmission &&
         !(queuedRequest && run.runtimeMode === "native" &&
           (run.status !== "cancelled" || authorizedAt > run.finishedAt!)) &&
@@ -214,11 +217,13 @@ export async function admitExplicitNativeContinuation(input: {
     // input cannot restart a cancelled run merely because it is still queued.
     if (queuedRequest && !queuedInterrupt && run.status === "cancelled" && !unusedAdmission &&
         !canContinueCancelledRun(run) && !(run.runtimeMode === "native" && authorizedAt > run.finishedAt!) &&
-        !(cancelledStartup && authorizedAt > run.finishedAt!)) return null;
+        !(cancelledStartup && authorizedAt > run.finishedAt!) &&
+        !(legacyUserTurn && authorizedAt > run.finishedAt!) &&
+        !(cancelledBeforeProcess && authorizedAt > run.finishedAt!)) return null;
     if (retry && run.status === "cancelled" && !canContinueCancelledRun(run) && !cancelledStartup)
       return blocked("cancelled_by_operator", "Inspect the stopped run and send a new message to continue.");
     if (cancelledStartup) cancelledStartupIds.add(run.id);
-    if (run.runtimeMode !== "native" && !unusedAdmission && !legacyUserTurn && !cancelledStartup) return null;
+    if (run.runtimeMode !== "native" && !unusedAdmission && !legacyUserTurn && !cancelledStartup && !cancelledBeforeProcess) return null;
     // A provider failure can finish the normal result/assessment commit path.
     // Its accepted failed result is immutable history, not a live controller.
     // Only a new user turn may pass this gate; the process/lease stop proofs
@@ -254,7 +259,7 @@ export async function admitExplicitNativeContinuation(input: {
       }))) return null;
     } else {
       if (leases.some(lease => !lease.releasedAt || lease.cleanupStatus === "failed")) return blocked("local_cleanup", "Waiting for the previous environment to finish cleanup. Your message will start automatically.");
-      if (!unusedAdmission && !cancelledStartup) {
+      if (!unusedAdmission && !cancelledStartup && !cancelledBeforeProcess) {
         // A missing process identity is not evidence that a provider exited.
         if (!run.processPid && !run.processGroupId &&
             !await hasNativeLocalProcessStop(db, companyId, run.id) &&

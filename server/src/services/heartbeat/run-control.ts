@@ -418,8 +418,11 @@ export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunCont
       ? await db.select().from(nativeRunFinalizations).where(and(
           eq(nativeRunFinalizations.companyId, run.companyId), eq(nativeRunFinalizations.runId, run.id),
         )) : [];
-    const cancelledPreparation = run.runtimeMode === "legacy" &&
-      await isCancelledNativeStartup(db, run, preparationCoordinator);
+    const cancelledBeforeProcess = run.status === "cancelled" &&
+      !run.processPid && !run.processGroupId &&
+      (!run.processStartedAt || Boolean(run.resultJson?.startupCancellation));
+    const cancelledPreparation = (run.runtimeMode === "legacy" &&
+      await isCancelledNativeStartup(db, run, preparationCoordinator)) || cancelledBeforeProcess;
     if (run.runtimeMode !== "native" && !cancelledPreparation &&
         parseObject(run.resultJson?.startupCancellation).beforeNativeSelection !== true &&
         !(await remoteExecutionHasStopped(db, run.companyId, run.id))) return;
