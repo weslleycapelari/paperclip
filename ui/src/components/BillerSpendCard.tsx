@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import type { CostByBiller, CostByProviderModel } from "@paperclipai/shared";
+import { useTranslation } from "@/i18n";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { QuotaBar } from "./QuotaBar";
 import { CostAmount } from "./CostAmount";
@@ -48,6 +49,8 @@ export function BillerSpendCard({
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
   }, [providerRows]);
 
+  const { t } = useTranslation();
+
   const providerBudgetShare = budgetMonthlyCents;
   const budgetPct =
     providerBudgetShare > 0
@@ -82,10 +85,10 @@ export function BillerSpendCard({
       <CardContent className="px-4 pb-4 pt-3 space-y-4">
         {showBudgetUtilization && budgetMonthlyCents > 0 && (
           <QuotaBar
-            label="Period spend"
+            label={t("costs.providers.periodSpend", "Period spend")}
             percentUsed={budgetPct}
             leftLabel={formatCents(row.costCents)}
-            rightLabel={`${Math.round(budgetPct)}% of company budget`}
+            rightLabel={t("costs.providers.pctOfBudget", "{{pct}}% of company budget", { pct: Math.round(budgetPct) })}
           />
         )}
 
@@ -104,7 +107,7 @@ export function BillerSpendCard({
             <div className="border-t border-border" />
             <div className="space-y-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Billing types
+                {t("costs.billers.billingTypes", "Billing types")}
               </p>
               <div className="space-y-1.5">
                 {billingTypeBreakdown.map(([billingType, costCents]) => (
@@ -123,7 +126,7 @@ export function BillerSpendCard({
             <div className="border-t border-border" />
             <div className="space-y-2">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Upstream providers
+                {t("costs.billers.upstreamProviders", "Upstream providers")}
               </p>
               <div className="space-y-1.5">
                 {providerBreakdown.map((entry) => (
